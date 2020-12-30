@@ -1,16 +1,23 @@
 # OnceMi.AspNetCore.OSS
-Asp.Net Core 5.0对象储存扩展包，支持Minio自建对象储存、阿里云OSS、腾讯云COS。支持OSS常规操作，比如储存桶创建，删除、对象上传、下载、生成签名URL等。
+Asp.Net Core 5.0对象储存扩展包，支持Minio自建对象储存、阿里云OSS、腾讯云COS。支持OSS常规操作，比如储存桶创建，删除、对象上传、下载、生成签名URL等。目前仅支持.NET 5，也推荐升级至.NET 5.
 
-# How to use
-1、安装OnceMi.AspNetCore.OSS。
-CLI中安装：
+# Documents  
+Minio: [点此查看](https://docs.min.io/docs/dotnet-client-api-reference.html "点此查看")  
+Aliyun: [点此查看](https://help.aliyun.com/document_detail/32085.html "点此查看")  
+QCloud: [点此查看](https://cloud.tencent.com/document/product/436/32819 "点此查看")  
+
+
+# How to use  
+1、Install OnceMi.AspNetCore.OSS。  
+CLI中安装：  
 ```shell
 dotnet add package OnceMi.AspNetCore.OSS
 ```
-Nuget中安装：
-在Nuget包管理器中搜索`OnceMi.AspNetCore.OSS`并安装。
+Nuget中安装：  
+在Nuget包管理器中搜索`OnceMi.AspNetCore.OSS`并安装。  
 
-2、Startup中注入服务
+2、Configuration  
+You need to configure OSSService in your Startup.cs：
 
 ```csharp
 //default minio
@@ -41,9 +48,9 @@ services.AddOSSService("aliyunoss", option =>
 services.AddOSSService("QCloud", "OSSProvider");
 ```
 
-可注入多个OSSService，不同的Service用名称来区分。需要注意的是，腾讯云COS中配置节点Endpoint表示AppId。
+可注入多个OSSService，不同的Service用名称来区分。需要注意的是，腾讯云COS中配置节点Endpoint表示AppId。  
 
-3、Use
+3、Use  
 ```csharp
 /// <summary>
 /// 使用默认的配置文件
