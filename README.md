@@ -19,8 +19,8 @@ services.AddOSSService(option =>
 {
     option.Provider = OSSProvider.Minio;
     option.Endpoint = "oss.oncemi.com:9000";
-    option.AccessKey = "Q38Gh1ewNjs6UCA9";
-    option.SecretKey = "AaTWMEB+tOlP3MuwNwWhhl1d6+qL4r8Q";
+    option.AccessKey = "Q*************9";
+    option.SecretKey = "A**************************Q";
     option.IsEnableHttps = true;
     option.IsEnableCache = true;
 });
@@ -31,8 +31,8 @@ services.AddOSSService("aliyunoss", option =>
  {
      option.Provider = OSSProvider.Aliyun;
      option.Endpoint = "oss-cn-hangzhou.aliyuncs.com";
-     option.AccessKey = "LTAI4GDTV8J26jSXG12qftDU";
-     option.SecretKey = "55zUTPZxPtrvo9WCryrSRfyRdPXhOT";
+     option.AccessKey = "L*******************U";
+     option.SecretKey = "5*******************************T";
      option.IsEnableCache = true;
  });
 
