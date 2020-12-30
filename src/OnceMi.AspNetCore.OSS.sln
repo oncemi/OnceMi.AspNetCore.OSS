@@ -5,13 +5,9 @@ VisualStudioVersion = 16.0.30717.126
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C313D5F9-6841-4183-AD11-351BC20C6650}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{7C825F4E-F7F0-48B8-9F63-5E217518AE90}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{411AFED1-C934-4A79-AA39-664F721417FC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Minio", "lib\Minio\Minio.csproj", "{B0E1FE59-C047-4A55-B6CF-B318A7AF0A8C}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.AspNetCore.Mvc", "samples\Sample.AspNetCore.Mvc\Sample.AspNetCore.Mvc.csproj", "{06087D38-447E-4511-852E-0B4F575926C2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.AspNetCore.Mvc", "samples\Sample.AspNetCore.Mvc\Sample.AspNetCore.Mvc.csproj", "{06087D38-447E-4511-852E-0B4F575926C2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnceMi.AspNetCore.OSS", "src\OnceMi.AspNetCore.OSS\OnceMi.AspNetCore.OSS.csproj", "{0D559561-3D45-418F-BF79-A60CAA6DFBD2}"
 EndProject
@@ -21,10 +17,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{B0E1FE59-C047-4A55-B6CF-B318A7AF0A8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B0E1FE59-C047-4A55-B6CF-B318A7AF0A8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B0E1FE59-C047-4A55-B6CF-B318A7AF0A8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B0E1FE59-C047-4A55-B6CF-B318A7AF0A8C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{06087D38-447E-4511-852E-0B4F575926C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{06087D38-447E-4511-852E-0B4F575926C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{06087D38-447E-4511-852E-0B4F575926C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -38,7 +30,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{B0E1FE59-C047-4A55-B6CF-B318A7AF0A8C} = {7C825F4E-F7F0-48B8-9F63-5E217518AE90}
 		{06087D38-447E-4511-852E-0B4F575926C2} = {411AFED1-C934-4A79-AA39-664F721417FC}
 		{0D559561-3D45-418F-BF79-A60CAA6DFBD2} = {C313D5F9-6841-4183-AD11-351BC20C6650}
 	EndGlobalSection
