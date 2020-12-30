@@ -2,7 +2,7 @@
 Asp.Net Core 5.0对象储存扩展包，支持Minio自建对象储存、阿里云OSS、腾讯云COS。支持OSS常规操作，比如储存桶创建，删除、对象上传、下载、生成签名URL等。目前仅支持.NET 5，也推荐升级至.NET 5.
 
 # How to use
-1、安装OnceMi.AspNetCore.OSS。  
+1、Install OnceMi.AspNetCore.OSS。  
 CLI中安装：  
 ```shell
 dotnet add package OnceMi.AspNetCore.OSS
@@ -10,7 +10,8 @@ dotnet add package OnceMi.AspNetCore.OSS
 Nuget中安装：  
 在Nuget包管理器中搜索`OnceMi.AspNetCore.OSS`并安装。  
 
-2、Startup中注入服务  
+2、Configuration  
+You need to configure OSSService in your Startup.cs：
 
 ```csharp
 //default minio
