@@ -50,6 +50,28 @@ services.AddOSSService("QCloud", "OSSProvider");
 
 可注入多个OSSService，不同的Service用名称来区分。需要注意的是，腾讯云COS中配置节点Endpoint表示AppId。  
 
+配置文件实例： 
+```csharp
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft": "Warning",
+      "Microsoft.Hosting.Lifetime": "Information"
+    }
+  },
+  "AllowedHosts": "*",
+  "OSSProvider": {
+    "Provider": "QCloud",
+    "Endpoint": "YOUR APPID",
+    "Region": "ap-chengdu",
+    "AccessKey": "A****************************z",
+    "SecretKey": "g6I***************la",
+    "IsEnableCache": true
+  }
+}
+```
+
 3、Use  
 ```csharp
 /// <summary>
