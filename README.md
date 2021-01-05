@@ -94,7 +94,7 @@ public class HomeController : Controller
 
 ```csharp
 /// <summary>
-/// 获取IOSSServiceFactory，更具名称创建对应的OSS服务
+/// 获取IOSSServiceFactory，根据名称创建对应的OSS服务
 /// </summary>
 public class QCloudController : Controller
 {
@@ -275,7 +275,7 @@ Task<ItemMeta> GetObjectMetadataAsync(string bucketName
     , DateTime? modifiedSince = null);
 ```
 
-获取对象的元数据，或更具VersionId获取对象元数据。需要注意的是，在阿里云对象存储和腾讯云对象存储中不支持matchEtag和modifiedSincecan参数。  
+获取对象的元数据，或根据VersionId获取对象元数据。需要注意的是，在阿里云对象存储和腾讯云对象存储中不支持matchEtag和modifiedSincecan参数。  
 
 ##### CopyObjectAsync  
 `Task<bool> CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null);`
@@ -312,7 +312,7 @@ Task<ItemMeta> GetObjectMetadataAsync(string bucketName
 ##### SetObjectAclAsync  
 `Task<bool> SetObjectAclAsync(string bucketName, string objectName, AccessMode mode);`
 
-设置对象的访问权限，默认文件的访问权限是集成储存桶的。但是可以单独通过此API为对象设置访问权限。  
+设置对象的访问权限，默认文件的访问权限是继承储存桶的。但是可以单独通过此API为对象设置访问权限。  
 
 ##### GetObjectAclAsync  
 `Task<AccessMode> GetObjectAclAsync(string bucketName, string objectName);`
