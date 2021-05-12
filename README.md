@@ -14,7 +14,7 @@ CLI中安装：
 dotnet add package OnceMi.AspNetCore.OSS
 ```
 Nuget中安装：  
-在Nuget包管理器中搜索`OnceMi.AspNetCore.OSS`并安装。  
+Search and install `OnceMi.AspNetCore.OSS` in Nuget manage。  
 
 2、Configuration  
 You need to configure OSSService in your Startup.cs：
@@ -53,23 +53,16 @@ services.AddOSSService("QCloud", "OSSProvider");
 配置文件实例： 
 ```csharp
 {
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft": "Warning",
-      "Microsoft.Hosting.Lifetime": "Information"
-    }
-  },
-  "AllowedHosts": "*",
   "OSSProvider": {
-    "Provider": "QCloud",
-    "Endpoint": "YOUR APPID",
-    "Region": "ap-chengdu",
+    "Provider": "QCloud", //枚举值支持：Minio/Aliyun/QCloud
+    "Endpoint": "你的AppId", //腾讯云中表示AppId
+    "Region": "ap-chengdu",  //地域
     "AccessKey": "A****************************z",
     "SecretKey": "g6I***************la",
-    "IsEnableCache": true
+    "IsEnableCache": true  //是否启用缓存，推荐开启
   }
 }
+
 ```
 
 3、Use  
@@ -323,3 +316,10 @@ Task<ItemMeta> GetObjectMetadataAsync(string bucketName
 `Task<AccessMode> RemoveObjectAclAsync(string bucketName, string objectName);`
 
 清除该对象的访问权限或将其恢复至继承权限。  
+
+# Dependencies
+
+1. Aliyun.OSS.SDK.NetCore
+2. EasyCaching.InMemory
+3. Newtonsoft.Json
+4. Tencent.QCloud.Cos.Sdk
