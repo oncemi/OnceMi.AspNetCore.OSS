@@ -1,7 +1,7 @@
 using Aliyun.OSS;
 using COSXML;
 using COSXML.Auth;
-using EasyCaching.Core;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Minio;
@@ -12,15 +12,15 @@ namespace OnceMi.AspNetCore.OSS
     public class OSSServiceFactory : IOSSServiceFactory
     {
         private readonly IOptionsMonitor<OSSOptions> optionsMonitor;
-        private readonly IEasyCachingProvider _cacheProvider;
+        private readonly IMemoryCache _cache;
         private readonly ILoggerFactory logger;
 
         public OSSServiceFactory(IOptionsMonitor<OSSOptions> optionsMonitor
-            , IEasyCachingProvider provider
+            , IMemoryCache provider
             , ILoggerFactory logger)
         {
             this.optionsMonitor = optionsMonitor ?? throw new ArgumentNullException();
-            this._cacheProvider = provider ?? throw new ArgumentNullException(nameof(IEasyCachingProvider));
+            this._cache = provider ?? throw new ArgumentNullException(nameof(IMemoryCache));
             this.logger = logger ?? throw new ArgumentNullException(nameof(ILoggerFactory));
         }
 
@@ -50,7 +50,7 @@ namespace OnceMi.AspNetCore.OSS
                 case OSSProvider.Aliyun:
                     {
                         OssClient client = new OssClient(options.Endpoint, options.AccessKey, options.SecretKey);
-                        return new AliyunOSSService(client, _cacheProvider, options);
+                        return new AliyunOSSService(client, _cache, options);
                     }
                 case OSSProvider.Minio:
                     {
@@ -64,7 +64,7 @@ namespace OnceMi.AspNetCore.OSS
                         {
                             client = client.WithSSL();
                         }
-                        return new MinioOSSService(client.Build(), _cacheProvider, options);
+                        return new MinioOSSService(client.Build(), _cache, options);
                     }
                 case OSSProvider.QCloud:
                     {
@@ -75,7 +75,7 @@ namespace OnceMi.AspNetCore.OSS
                           .Build();
                         QCloudCredentialProvider cosCredentialProvider = new DefaultQCloudCredentialProvider(options.AccessKey, options.SecretKey, 600);
                         CosXml cosXml = new CosXmlServer(config, cosCredentialProvider);
-                        return new QCloudOSSService(cosXml, _cacheProvider, options);
+                        return new QCloudOSSService(cosXml, _cache, options);
                     }
                 default:
                     throw new Exception("Unknow provider type");

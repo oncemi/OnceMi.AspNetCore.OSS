@@ -1,5 +1,5 @@
-﻿using EasyCaching.Core;
-using Microsoft.AspNetCore.StaticFiles;
+﻿using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.Caching.Memory;
 using Minio;
 using Minio.DataModel;
 using Minio.Exceptions;
@@ -15,7 +15,7 @@ namespace OnceMi.AspNetCore.OSS
 {
     public class MinioOSSService : IMinioOSSService
     {
-        private readonly IEasyCachingProvider _cache;
+        private readonly IMemoryCache _cache;
         private readonly MinioClient _client = null;
         public OSSOptions Options { get; private set; }
 
@@ -30,11 +30,11 @@ namespace OnceMi.AspNetCore.OSS
         }
 
         public MinioOSSService(MinioClient client
-            , IEasyCachingProvider provider
+            , IMemoryCache cache
             , OSSOptions options)
         {
             this._client = client ?? throw new ArgumentNullException(nameof(MinioClient));
-            this._cache = provider ?? throw new ArgumentNullException(nameof(IEasyCachingProvider));
+            this._cache = cache ?? throw new ArgumentNullException(nameof(IMemoryCache));
             this.Options = options ?? throw new ArgumentNullException(nameof(OSSOptions));
         }
 
@@ -918,7 +918,7 @@ namespace OnceMi.AspNetCore.OSS
         /// </summary>
         /// <param name="bucketName"></param>
         /// <param name="objectName"></param>
-        public async void RemovePresignedUrlCache(string bucketName, string objectName)
+        public void RemovePresignedUrlCache(string bucketName, string objectName)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
@@ -931,9 +931,9 @@ namespace OnceMi.AspNetCore.OSS
             if (Options.IsEnableCache)
             {
                 string key = Encrypt.MD5($"{bucketName}_{objectName}_{PresignedObjectType.Put.ToString().ToUpper()}");
-                await _cache.RemoveAsync(key);
+                _cache.Remove(key);
                 key = Encrypt.MD5($"{bucketName}_{objectName}_{PresignedObjectType.Get.ToString().ToUpper()}");
-                await _cache.RemoveAsync(key);
+                _cache.Remove(key);
             }
         }
 
@@ -1220,7 +1220,7 @@ namespace OnceMi.AspNetCore.OSS
             }
             if (hasUpdate)
             {
-                if(!await SetPolicyAsync(bucketName, statements))
+                if (!await SetPolicyAsync(bucketName, statements))
                 {
                     throw new Exception("Save new policy info failed when remove object acl.");
                 }
@@ -1265,8 +1265,8 @@ namespace OnceMi.AspNetCore.OSS
                 if (Options.IsEnableCache && expiresInt > minExpiresInt)
                 {
                     string key = Encrypt.MD5($"{bucketName}_{objectName}_{type.ToString().ToUpper()}");
-                    var cacheResult = await _cache.GetAsync<PresignedUrlCache>(key);
-                    PresignedUrlCache cache = cacheResult.HasValue ? cacheResult.Value : null;
+                    var cacheResult = _cache.Get<PresignedUrlCache>(key);
+                    PresignedUrlCache cache = cacheResult != null ? cacheResult : null;
                     //Unix时间
                     long nowTime = (DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000;
                     //缓存中存在，且有效时间不低于10分钟
@@ -1304,7 +1304,7 @@ namespace OnceMi.AspNetCore.OSS
                             Type = type
                         };
                         int randomSec = new Random().Next(5, 30);
-                        await _cache.SetAsync(key, urlCache, TimeSpan.FromSeconds(expiresInt + randomSec));
+                        _cache.Set(key, urlCache, TimeSpan.FromSeconds(expiresInt + randomSec));
                         return urlCache.Url;
                     }
                 }

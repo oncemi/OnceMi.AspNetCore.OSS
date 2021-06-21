@@ -85,12 +85,7 @@ namespace OnceMi.AspNetCore.OSS
                 var factory = provider.GetService<IOSSServiceFactory>();
                 if (factory == null)
                 {
-                    //easy cache
-                    services.AddEasyCaching(options =>
-                    {
-                        options.UseInMemory("default");
-                    });
-
+                    services.AddMemoryCache();
                     services.TryAddSingleton<IOSSServiceFactory, OSSServiceFactory>();
                 }
             }

@@ -4,13 +4,12 @@ using COSXML.Model.Bucket;
 using COSXML.Model.Object;
 using COSXML.Model.Service;
 using COSXML.Model.Tag;
-using EasyCaching.Core;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,7 +17,7 @@ namespace OnceMi.AspNetCore.OSS
 {
     public class QCloudOSSService : IQCloudOSSService
     {
-        private readonly IEasyCachingProvider _cache;
+        private readonly IMemoryCache _cache;
         private readonly CosXml _client = null;
         public OSSOptions Options { get; private set; }
 
@@ -31,11 +30,11 @@ namespace OnceMi.AspNetCore.OSS
         }
 
         public QCloudOSSService(CosXml client
-            , IEasyCachingProvider provider
+            , IMemoryCache cache
             , OSSOptions options)
         {
             this._client = client ?? throw new ArgumentNullException(nameof(CosXml));
-            this._cache = provider ?? throw new ArgumentNullException(nameof(IEasyCachingProvider));
+            this._cache = cache ?? throw new ArgumentNullException(nameof(IMemoryCache));
             this.Options = options ?? throw new ArgumentNullException(nameof(OSSOptions));
         }
 
@@ -75,7 +74,7 @@ namespace OnceMi.AspNetCore.OSS
             }
         }
 
-        public async Task<bool> CreateBucketAsync(string bucketName)
+        public Task<bool> CreateBucketAsync(string bucketName)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
@@ -85,10 +84,10 @@ namespace OnceMi.AspNetCore.OSS
             PutBucketRequest request = new PutBucketRequest(bucketName);
             //执行请求
             _client.PutBucket(request);
-            return await Task.FromResult(true);
+            return Task.FromResult(true);
         }
 
-        public async Task<List<Bucket>> ListBucketsAsync()
+        public Task<List<Bucket>> ListBucketsAsync()
         {
             GetServiceRequest request = new GetServiceRequest();
             GetServiceResult result = _client.GetService(request);
@@ -113,10 +112,10 @@ namespace OnceMi.AspNetCore.OSS
                     CreationDate = item.createDate
                 });
             }
-            return await Task.FromResult(buckets);
+            return Task.FromResult(buckets);
         }
 
-        public async Task<bool> RemoveBucketAsync(string bucketName)
+        public Task<bool> RemoveBucketAsync(string bucketName)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
@@ -126,10 +125,10 @@ namespace OnceMi.AspNetCore.OSS
             DeleteBucketRequest request = new DeleteBucketRequest(bucketName);
             //执行请求
             DeleteBucketResult result = _client.DeleteBucket(request);
-            return await Task.FromResult(result.IsSuccessful());
+            return Task.FromResult(result.IsSuccessful());
         }
 
-        public async Task<bool> SetBucketAclAsync(string bucketName, AccessMode mode)
+        public Task<bool> SetBucketAclAsync(string bucketName, AccessMode mode)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
@@ -149,10 +148,10 @@ namespace OnceMi.AspNetCore.OSS
             request.SetCosACL(acl);
             //执行请求
             PutBucketACLResult result = _client.PutBucketACL(request);
-            return await Task.FromResult(result.IsSuccessful());
+            return Task.FromResult(result.IsSuccessful());
         }
 
-        public async Task<AccessMode> GetBucketAclAsync(string bucketName)
+        public Task<AccessMode> GetBucketAclAsync(string bucketName)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
@@ -196,19 +195,19 @@ namespace OnceMi.AspNetCore.OSS
             //结果
             if (isPublicRead && !isPublicWrite)
             {
-                return await Task.FromResult(AccessMode.PublicRead);
+                return Task.FromResult(AccessMode.PublicRead);
             }
             else if (isPublicRead && isPublicWrite)
             {
-                return await Task.FromResult(AccessMode.PublicReadWrite);
+                return Task.FromResult(AccessMode.PublicReadWrite);
             }
             else if (!isPublicRead && isPublicWrite)
             {
-                return await Task.FromResult(AccessMode.Private);
+                return Task.FromResult(AccessMode.Private);
             }
             else
             {
-                return await Task.FromResult(AccessMode.Private);
+                return Task.FromResult(AccessMode.Private);
             }
         }
 
@@ -245,7 +244,7 @@ namespace OnceMi.AspNetCore.OSS
             }
         }
 
-        public async Task<List<Item>> ListObjectsAsync(string bucketName, string prefix = null)
+        public Task<List<Item>> ListObjectsAsync(string bucketName, string prefix = null)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
@@ -289,7 +288,7 @@ namespace OnceMi.AspNetCore.OSS
                     });
                 }
             } while (info.isTruncated);
-            return await Task.FromResult(items);
+            return Task.FromResult(items);
         }
 
         public async Task GetObjectAsync(string bucketName, string objectName, Action<Stream> callback, CancellationToken cancellationToken = default)
@@ -356,7 +355,7 @@ namespace OnceMi.AspNetCore.OSS
             }, cancellationToken);
         }
 
-        public async Task<bool> PutObjectAsync(string bucketName, string objectName, Stream data, CancellationToken cancellationToken = default)
+        public Task<bool> PutObjectAsync(string bucketName, string objectName, Stream data, CancellationToken cancellationToken = default)
         {
             byte[] StreamToBytes(Stream stream)
             {
@@ -397,10 +396,10 @@ namespace OnceMi.AspNetCore.OSS
             PostObjectRequest request = new PostObjectRequest(bucketName, objectName, upload);
             request.SetContentType(contentType);
             PostObjectResult result = _client.PostObject(request);
-            return await Task.FromResult(result.IsSuccessful());
+            return Task.FromResult(result.IsSuccessful());
         }
 
-        public async Task<bool> PutObjectAsync(string bucketName, string objectName, string filePath, CancellationToken cancellationToken = default)
+        public Task<bool> PutObjectAsync(string bucketName, string objectName, string filePath, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
@@ -421,10 +420,10 @@ namespace OnceMi.AspNetCore.OSS
             bucketName = ConvertBucketName(bucketName);
             PutObjectRequest request = new PutObjectRequest(bucketName, objectName, filePath);
             PutObjectResult result = _client.PutObject(request);
-            return await Task.FromResult(result.IsSuccessful());
+            return Task.FromResult(result.IsSuccessful());
         }
 
-        public async Task<ItemMeta> GetObjectMetadataAsync(string bucketName, string objectName, string versionID = null, string matchEtag = null, DateTime? modifiedSince = null)
+        public Task<ItemMeta> GetObjectMetadataAsync(string bucketName, string objectName, string versionID = null, string matchEtag = null, DateTime? modifiedSince = null)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
@@ -453,10 +452,10 @@ namespace OnceMi.AspNetCore.OSS
                 ETag = result.eTag,
                 IsEnableHttps = Options.IsEnableHttps,
             };
-            return await Task.FromResult(metaData);
+            return Task.FromResult(metaData);
         }
 
-        public async Task<bool> CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null)
+        public Task<bool> CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
@@ -484,10 +483,10 @@ namespace OnceMi.AspNetCore.OSS
             request.SetCopyMetaDataDirective(COSXML.Common.CosMetaDataDirective.Copy);
             //执行请求
             CopyObjectResult result = _client.CopyObject(request);
-            return await Task.FromResult(result.IsSuccessful());
+            return Task.FromResult(result.IsSuccessful());
         }
 
-        public async Task<bool> RemoveObjectAsync(string bucketName, string objectName)
+        public Task<bool> RemoveObjectAsync(string bucketName, string objectName)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
@@ -500,10 +499,10 @@ namespace OnceMi.AspNetCore.OSS
             bucketName = ConvertBucketName(bucketName);
             DeleteObjectRequest request = new DeleteObjectRequest(bucketName, objectName);
             DeleteObjectResult result = _client.DeleteObject(request);
-            return await Task.FromResult(result.IsSuccessful());
+            return Task.FromResult(result.IsSuccessful());
         }
 
-        public async Task<bool> RemoveObjectAsync(string bucketName, List<string> objectNames)
+        public Task<bool> RemoveObjectAsync(string bucketName, List<string> objectNames)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
@@ -519,10 +518,10 @@ namespace OnceMi.AspNetCore.OSS
             request.SetDeleteQuiet(false);
             request.SetObjectKeys(objectNames);
             DeleteMultiObjectResult result = _client.DeleteMultiObjects(request);
-            return await Task.FromResult(result.IsSuccessful());
+            return Task.FromResult(result.IsSuccessful());
         }
 
-        public async void RemovePresignedUrlCache(string bucketName, string objectName)
+        public void RemovePresignedUrlCache(string bucketName, string objectName)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
@@ -535,23 +534,23 @@ namespace OnceMi.AspNetCore.OSS
             if (Options.IsEnableCache)
             {
                 string key = Encrypt.MD5($"{bucketName}_{objectName}_{PresignedObjectType.Put.ToString().ToUpper()}");
-                await _cache.RemoveAsync(key);
+                _cache.Remove(key);
                 key = Encrypt.MD5($"{bucketName}_{objectName}_{PresignedObjectType.Get.ToString().ToUpper()}");
-                await _cache.RemoveAsync(key);
+                _cache.Remove(key);
             }
         }
 
-        public async Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt)
+        public Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt)
         {
-            return await PresignedObjectAsync(bucketName, objectName, expiresInt, PresignedObjectType.Get);
+            return PresignedObjectAsync(bucketName, objectName, expiresInt, PresignedObjectType.Get);
         }
 
-        public async Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)
+        public Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)
         {
-            return await PresignedObjectAsync(bucketName, objectName, expiresInt, PresignedObjectType.Put);
+            return PresignedObjectAsync(bucketName, objectName, expiresInt, PresignedObjectType.Put);
         }
 
-        public async Task<bool> SetObjectAclAsync(string bucketName, string objectName, AccessMode mode)
+        public Task<bool> SetObjectAclAsync(string bucketName, string objectName, AccessMode mode)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
@@ -579,10 +578,10 @@ namespace OnceMi.AspNetCore.OSS
             //设置私有读写权限 
             request.SetCosACL(acl);
             PutObjectACLResult result = _client.PutObjectACL(request);
-            return await Task.FromResult(result.IsSuccessful());
+            return Task.FromResult(result.IsSuccessful());
         }
 
-        public async Task<AccessMode> GetObjectAclAsync(string bucketName, string objectName)
+        public Task<AccessMode> GetObjectAclAsync(string bucketName, string objectName)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
@@ -594,36 +593,6 @@ namespace OnceMi.AspNetCore.OSS
             }
             bool isPublicRead = false;
             bool isPublicWrite = false;
-
-            //此处存在一个问题
-            //当储存桶权限设置为公共读，对象权限设置为继承，但是获取到的权限仍然是私有的。但是此时对象是可以呗公共访问到。
-            //同样，储存桶设置为公共读，对象设置为私有，获取到的权限仍然是私有的。
-
-            //获取储存桶权限
-            //AccessMode bucketMode = await GetBucketAclAsync(bucketName);
-            //switch (bucketMode)
-            //{
-            //    case AccessMode.PublicRead:
-            //        {
-            //            isPublicRead = true;
-            //            isPublicWrite = false;
-            //            break;
-            //        }
-            //    case AccessMode.PublicReadWrite:
-            //        {
-            //            isPublicRead = true;
-            //            isPublicWrite = true;
-            //            break;
-            //        }
-            //    case AccessMode.Default:
-            //    case AccessMode.Private:
-            //    default:
-            //        {
-            //            isPublicRead = false;
-            //            isPublicWrite = false;
-            //            break;
-            //        }
-            //}
 
             bucketName = ConvertBucketName(bucketName);
             GetObjectACLRequest request = new GetObjectACLRequest(bucketName, objectName);
@@ -659,19 +628,19 @@ namespace OnceMi.AspNetCore.OSS
             //结果
             if (isPublicRead && !isPublicWrite)
             {
-                return await Task.FromResult(AccessMode.PublicRead);
+                return Task.FromResult(AccessMode.PublicRead);
             }
             else if (isPublicRead && isPublicWrite)
             {
-                return await Task.FromResult(AccessMode.PublicReadWrite);
+                return Task.FromResult(AccessMode.PublicReadWrite);
             }
             else if (!isPublicRead && isPublicWrite)
             {
-                return await Task.FromResult(AccessMode.Private);
+                return Task.FromResult(AccessMode.Private);
             }
             else
             {
-                return await Task.FromResult(AccessMode.Private);
+                return Task.FromResult(AccessMode.Private);
             }
         }
 
@@ -727,8 +696,8 @@ namespace OnceMi.AspNetCore.OSS
             //查找缓存
             if (Options.IsEnableCache && (expiresInt > minExpiresInt))
             {
-                var cacheResult = await _cache.GetAsync<PresignedUrlCache>(key);
-                PresignedUrlCache cache = cacheResult.HasValue ? cacheResult.Value : null;
+                var cacheResult = _cache.Get<PresignedUrlCache>(key);
+                PresignedUrlCache cache = cacheResult != null ? cacheResult : null;
                 //缓存中存在，且有效时间不低于10分钟
                 if (cache != null
                     && cache.Type == type
@@ -781,7 +750,7 @@ namespace OnceMi.AspNetCore.OSS
                     Type = type
                 };
                 int randomSec = new Random().Next(5, 30);
-                await _cache.SetAsync(key, urlCache, TimeSpan.FromSeconds(expiresInt + randomSec));
+                _cache.Set(key, urlCache, TimeSpan.FromSeconds(expiresInt + randomSec));
             }
             return objectUrl;
         }

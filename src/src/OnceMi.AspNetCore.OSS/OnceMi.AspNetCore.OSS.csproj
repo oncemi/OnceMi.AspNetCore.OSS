@@ -16,11 +16,13 @@
 
   <ItemGroup>
     <PackageReference Include="Aliyun.OSS.SDK.NetCore" Version="2.13.0" />
-    <PackageReference Include="EasyCaching.InMemory" Version="1.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
-    <PackageReference Include="Tencent.QCloud.Cos.Sdk" Version="5.4.18" />
+    <PackageReference Include="Tencent.QCloud.Cos.Sdk" Version="5.4.19" />
     <!--以下为Minio所需包-->
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Crc32.NET" Version="1.2.0" />
