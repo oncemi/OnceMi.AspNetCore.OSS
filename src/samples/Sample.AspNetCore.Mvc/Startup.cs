@@ -39,13 +39,13 @@ namespace Sample.AspNetCore.Mvc
             //aliyun oss
             //添加名称为‘aliyunoss’的OSS对象储存配置信息
             services.AddOSSService("aliyunoss", option =>
-             {
+            {
                  option.Provider = OSSProvider.Aliyun;
                  option.Endpoint = "oss-cn-hangzhou.aliyuncs.com";
                  option.AccessKey = "L************U";
                  option.SecretKey = "5***********************T";
                  option.IsEnableCache = true;
-             });
+            });
 
             //qcloud oss
             //从配置文件中加载节点为‘OSSProvider’的配置信息

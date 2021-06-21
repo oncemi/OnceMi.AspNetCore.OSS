@@ -56,7 +56,10 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(objectName));
             }
-            await _client.RemoveIncompleteUploadAsync(bucketName, objectName);
+            RemoveIncompleteUploadArgs args = new RemoveIncompleteUploadArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName);
+            await _client.RemoveIncompleteUploadAsync(args);
             return true;
         }
 
@@ -71,7 +74,9 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            IObservable<Upload> observable = _client.ListIncompleteUploads(bucketName);
+            ListIncompleteUploadsArgs args = new ListIncompleteUploadsArgs()
+                .WithBucket(bucketName);
+            IObservable<Upload> observable = _client.ListIncompleteUploads(args);
 
             bool isFinish = false;
             List<ItemUploadInfo> result = new List<ItemUploadInfo>();
@@ -346,13 +351,14 @@ namespace OnceMi.AspNetCore.OSS
 
         #region Bucket
 
-        public async Task<bool> BucketExistsAsync(string bucketName)
+        public Task<bool> BucketExistsAsync(string bucketName)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            return await _client.BucketExistsAsync(new BucketExistsArgs().WithBucket(bucketName));
+            var args = new BucketExistsArgs().WithBucket(bucketName);
+            return _client.BucketExistsAsync(args);
         }
 
         public async Task<bool> CreateBucketAsync(string bucketName)
@@ -419,7 +425,7 @@ namespace OnceMi.AspNetCore.OSS
             }
         }
 
-        public async Task<bool> SetBucketAclAsync(string bucketName, AccessMode mode)
+        public Task<bool> SetBucketAclAsync(string bucketName, AccessMode mode)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
@@ -453,7 +459,8 @@ namespace OnceMi.AspNetCore.OSS
                             },
                             IsDelete = false
                         });
-                        return await this.SetPolicyAsync(bucketName, statementItems);
+
+                        return this.SetPolicyAsync(bucketName, statementItems);
                     }
                 case AccessMode.PublicRead:
                     {
@@ -501,7 +508,7 @@ namespace OnceMi.AspNetCore.OSS
                             },
                             IsDelete = false
                         });
-                        return await this.SetPolicyAsync(bucketName, statementItems);
+                        return this.SetPolicyAsync(bucketName, statementItems);
                     }
                 case AccessMode.PublicReadWrite:
                     {
@@ -528,12 +535,12 @@ namespace OnceMi.AspNetCore.OSS
                             },
                             IsDelete = false
                         });
-                        return await this.SetPolicyAsync(bucketName, statementItems);
+                        return this.SetPolicyAsync(bucketName, statementItems);
                     }
                 case AccessMode.Default:
                 default:
                     {
-                        return await this.RemovePolicyAsync(bucketName);
+                        return this.RemovePolicyAsync(bucketName);
                     }
             }
         }
@@ -689,7 +696,7 @@ namespace OnceMi.AspNetCore.OSS
             return result;
         }
 
-        public async Task GetObjectAsync(string bucketName, string objectName, Action<Stream> callback, CancellationToken cancellationToken = default)
+        public Task GetObjectAsync(string bucketName, string objectName, Action<Stream> callback, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
@@ -699,13 +706,17 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(objectName));
             }
-            await _client.GetObjectAsync(bucketName, objectName, (stream) =>
-            {
-                callback(stream);
-            }, null, cancellationToken);
+            GetObjectArgs args = new GetObjectArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName)
+                .WithCallbackStream((stream) =>
+                {
+                    callback(stream);
+                });
+            return _client.GetObjectAsync(args, cancellationToken);
         }
 
-        public async Task GetObjectAsync(string bucketName, string objectName, string fileName, CancellationToken cancellationToken = default)
+        public Task GetObjectAsync(string bucketName, string objectName, string fileName, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
@@ -720,7 +731,11 @@ namespace OnceMi.AspNetCore.OSS
             {
                 Directory.CreateDirectory(path);
             }
-            await _client.GetObjectAsync(bucketName, objectName, fileName, null, cancellationToken);
+            GetObjectArgs args = new GetObjectArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName)
+                .WithFile(fileName);
+            return _client.GetObjectAsync(args, cancellationToken);
         }
 
         public async Task<bool> PutObjectAsync(string bucketName, string objectName, Stream data, CancellationToken cancellationToken = default)
@@ -746,7 +761,13 @@ namespace OnceMi.AspNetCore.OSS
             {
                 contentType = "application/octet-stream";
             }
-            await _client.PutObjectAsync(bucketName, objectName, data, data.Length, contentType, null, null, cancellationToken);
+            PutObjectArgs args = new PutObjectArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName)
+                .WithStreamData(data)
+                .WithObjectSize(data.Length)
+                .WithContentType(contentType);
+            await _client.PutObjectAsync(args, cancellationToken);
             return true;
         }
 
@@ -770,7 +791,12 @@ namespace OnceMi.AspNetCore.OSS
             {
                 contentType = "application/octet-stream";
             }
-            await _client.PutObjectAsync(bucketName, objectName, filePath, contentType, null, null, cancellationToken);
+            PutObjectArgs args = new PutObjectArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName)
+                .WithFileName(filePath)
+                .WithContentType(contentType);
+            await _client.PutObjectAsync(args, cancellationToken);
             return true;
         }
 
@@ -829,8 +855,14 @@ namespace OnceMi.AspNetCore.OSS
             {
                 destObjectName = objectName;
             }
-
-            await _client.CopyObjectAsync(bucketName, objectName, objectName, destObjectName);
+            CopySourceObjectArgs cpSrcArgs = new CopySourceObjectArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName);
+            CopyObjectArgs args = new CopyObjectArgs()
+                .WithBucket(destBucketName)
+                .WithObject(destObjectName)
+                .WithCopyObjectSource(cpSrcArgs);
+            await _client.CopyObjectAsync(args);
             return true;
         }
 
@@ -844,8 +876,10 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(objectName));
             }
-
-            await _client.RemoveObjectAsync(bucketName, objectName);
+            RemoveObjectArgs args = new RemoveObjectArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName);
+            await _client.RemoveObjectAsync(args);
             return true;
         }
 
@@ -859,8 +893,10 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(objectNames));
             }
-
-            IObservable<Minio.Exceptions.DeleteError> observable = await _client.RemoveObjectAsync(bucketName, objectNames);
+            RemoveObjectsArgs args = new RemoveObjectsArgs()
+                .WithBucket(bucketName)
+                .WithObjects(objectNames);
+            IObservable<Minio.Exceptions.DeleteError> observable = await _client.RemoveObjectsAsync(args);
             List<string> removeFailed = new List<string>();
 
             bool isFinish = false;
@@ -903,14 +939,14 @@ namespace OnceMi.AspNetCore.OSS
         /// <param name="objectName"></param>
         /// <param name="expiresInt"></param>
         /// <returns></returns>
-        public async Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt)
+        public Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt)
         {
-            return await PresignedObjectAsync(bucketName, objectName, expiresInt, PresignedObjectType.Get);
+            return PresignedObjectAsync(bucketName, objectName, expiresInt, PresignedObjectType.Get);
         }
 
-        public async Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)
+        public Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)
         {
-            return await PresignedObjectAsync(bucketName, objectName, expiresInt, PresignedObjectType.Put);
+            return PresignedObjectAsync(bucketName, objectName, expiresInt, PresignedObjectType.Put);
         }
 
         /// <summary>
@@ -957,7 +993,7 @@ namespace OnceMi.AspNetCore.OSS
             return Task.FromResult(true);
         }
 
-        public async Task<bool> SetObjectAclAsync(string bucketName, string objectName, AccessMode mode)
+        public Task<bool> SetObjectAclAsync(string bucketName, string objectName, AccessMode mode)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
@@ -994,7 +1030,7 @@ namespace OnceMi.AspNetCore.OSS
                             },
                             IsDelete = false
                         });
-                        return await this.SetPolicyAsync(bucketName, statementItems);
+                        return this.SetPolicyAsync(bucketName, statementItems);
                     }
                 case AccessMode.PublicRead:
                     {
@@ -1041,7 +1077,7 @@ namespace OnceMi.AspNetCore.OSS
                             },
                             IsDelete = false
                         });
-                        return await this.SetPolicyAsync(bucketName, statementItems);
+                        return this.SetPolicyAsync(bucketName, statementItems);
                     }
                 case AccessMode.PublicReadWrite:
                     {
@@ -1067,7 +1103,7 @@ namespace OnceMi.AspNetCore.OSS
                             },
                             IsDelete = false
                         });
-                        return await this.SetPolicyAsync(bucketName, statementItems);
+                        return this.SetPolicyAsync(bucketName, statementItems);
                     }
                 case AccessMode.Default:
                 default:
@@ -1285,12 +1321,7 @@ namespace OnceMi.AspNetCore.OSS
                         {
                             throw new Exception($"Object '{objectName}' not in bucket '{bucketName}'.");
                         }
-                        PresignedPutObjectArgs args = new PresignedPutObjectArgs()
-                            .WithBucket(bucketName)
-                            .WithObject(objectName)
-                            .WithExpiry(expiresInt);
-                        string presignedUrl = type == PresignedObjectType.Get ? await _client.PresignedGetObjectAsync(bucketName, objectName, expiresInt)
-                            : await _client.PresignedPutObjectAsync(args);
+                        string presignedUrl = await PresignedGetOrPutObject(bucketName, objectName, expiresInt, type);
                         if (string.IsNullOrEmpty(presignedUrl))
                         {
                             throw new Exception("Result url is null.");
@@ -1314,12 +1345,29 @@ namespace OnceMi.AspNetCore.OSS
                     {
                         throw new Exception($"Object '{objectName}' not in bucket '{bucketName}'.");
                     }
-                    PresignedPutObjectArgs args = new PresignedPutObjectArgs()
+                    string presignedUrl = await PresignedGetOrPutObject(bucketName, objectName, expiresInt, type);
+                    return presignedUrl;
+                }
+
+                async Task<string> PresignedGetOrPutObject(string bucketName, string objectName, int expiresInt, PresignedObjectType type)
+                {
+                    string presignedUrl;
+                    if (type == PresignedObjectType.Get)
+                    {
+                        PresignedGetObjectArgs args = new PresignedGetObjectArgs()
                             .WithBucket(bucketName)
                             .WithObject(objectName)
                             .WithExpiry(expiresInt);
-                    string presignedUrl = type == PresignedObjectType.Get ? await _client.PresignedGetObjectAsync(bucketName, objectName, expiresInt)
-                        : await _client.PresignedPutObjectAsync(args);
+                        presignedUrl = await _client.PresignedGetObjectAsync(args);
+                    }
+                    else
+                    {
+                        PresignedPutObjectArgs args = new PresignedPutObjectArgs()
+                            .WithBucket(bucketName)
+                            .WithObject(objectName)
+                            .WithExpiry(expiresInt);
+                        presignedUrl = await _client.PresignedPutObjectAsync(args);
+                    }
                     return presignedUrl;
                 }
             }
@@ -1328,6 +1376,8 @@ namespace OnceMi.AspNetCore.OSS
                 throw new Exception($"Presigned {(type == PresignedObjectType.Get ? "get" : "put")} url for object '{objectName}' from {bucketName} failed. {ex.Message}", ex);
             }
         }
+
+        #region private
 
         /// <summary>
         /// 将对象序列化为JSON格式
@@ -1338,6 +1388,21 @@ namespace OnceMi.AspNetCore.OSS
         {
             string json = JsonConvert.SerializeObject(o);
             return json;
+        }
+
+        /// <summary>
+        /// 解析JSON字符串生成对象实体
+        /// </summary>
+        /// <typeparam name="T">对象类型</typeparam>
+        /// <param name="json">json字符串(eg.{"ID":"112","Name":"石子儿"})</param>
+        /// <returns>对象实体</returns>
+        private T DeserializeJsonToObject<T>(string json) where T : class
+        {
+            JsonSerializer serializer = new JsonSerializer();
+            StringReader sr = new StringReader(json);
+            object o = serializer.Deserialize(new JsonTextReader(sr), typeof(T));
+            T t = o as T;
+            return t;
         }
 
         private List<StatementItem> UnpackResource(List<StatementItem> source)
@@ -1391,20 +1456,9 @@ namespace OnceMi.AspNetCore.OSS
             return false;
         }
 
-        /// <summary>
-        /// 解析JSON字符串生成对象实体
-        /// </summary>
-        /// <typeparam name="T">对象类型</typeparam>
-        /// <param name="json">json字符串(eg.{"ID":"112","Name":"石子儿"})</param>
-        /// <returns>对象实体</returns>
-        private T DeserializeJsonToObject<T>(string json) where T : class
-        {
-            JsonSerializer serializer = new JsonSerializer();
-            StringReader sr = new StringReader(json);
-            object o = serializer.Deserialize(new JsonTextReader(sr), typeof(T));
-            T t = o as T;
-            return t;
-        }
+        #endregion
+
+
         #endregion
     }
 }
