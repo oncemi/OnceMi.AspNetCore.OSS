@@ -320,6 +320,13 @@ Task<ItemMeta> GetObjectMetadataAsync(string bucketName
 ## Dependencies
 
 1. Aliyun.OSS.SDK.NetCore
-2. EasyCaching.InMemory
+2. Microsoft.Extensions.Caching.Memory
 3. Newtonsoft.Json
 4. Tencent.QCloud.Cos.Sdk
+
+## Update Logs
+#### 1.0.4
+（本次更新不涉及API更新，可直接更新Nuget包）
+1. 更新Minio依赖，同时更新Minio调用方式
+2. 更新腾讯云Nuget包
+3. 移除EasyCaching，使用Microsoft.Extensions.Caching.Memory
