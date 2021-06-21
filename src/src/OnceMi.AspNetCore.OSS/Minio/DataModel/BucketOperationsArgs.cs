@@ -1,5 +1,5 @@
 /*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020,2021 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020, 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ using System.IO;
 using Minio.DataModel;
 using Minio.DataModel.ILM;
 using Minio.DataModel.Replication;
+using Minio.DataModel.Tags;
+using Minio.DataModel.ObjectLock;
 using Minio.Exceptions;
 using RestSharp;
 
@@ -82,9 +84,17 @@ namespace Minio
     }
     public class ListObjectsArgs : BucketArgs<ListObjectsArgs>
     {
-        internal string Prefix;
-        internal bool Recursive;
-        internal bool Versions;
+        internal string Prefix { get; private set; }
+        internal bool Recursive { get; private set; }
+        internal bool Versions { get; private set; }
+        internal bool UseV2 { get; private set; }
+
+        public ListObjectsArgs()
+        {
+            this.UseV2 = true;
+            this.Versions = false;
+        }
+
         public ListObjectsArgs WithPrefix(string prefix)
         {
             this.Prefix = prefix;
@@ -100,13 +110,21 @@ namespace Minio
             this.Versions = ver;
             return this;
         }
+
+        public ListObjectsArgs WithListObjectsV1(bool useV1)
+        {
+            this.UseV2 = !useV1;
+            return this;
+        }
     }
 
     internal class GetObjectListArgs : BucketArgs<GetObjectListArgs>
     {
         internal string Delimiter { get; private set; }
         internal string Prefix { get; private set; }
+        internal bool UseV2 { get; private set; }
         internal string Marker { get; private set; }
+        internal string VersionIdMarker { get; private set; }
         internal bool Versions { get; private set; }
         internal string ContinuationToken { get; set; }
 
@@ -116,6 +134,8 @@ namespace Minio
             // Avoiding null values. Default is empty strings.
             this.Delimiter = string.Empty;
             this.Prefix = string.Empty;
+            this.UseV2 = true;
+            this.Versions = false;
             this.Marker = string.Empty;
         }
 
@@ -133,7 +153,13 @@ namespace Minio
 
         public GetObjectListArgs WithMarker(string marker)
         {
-            this.Marker = marker ?? string.Empty;
+            this.Marker = string.IsNullOrWhiteSpace(marker)? string.Empty : marker;
+            return this;
+        }
+
+        public GetObjectListArgs WithVersionIdMarker(string marker)
+        {
+            this.VersionIdMarker = string.IsNullOrWhiteSpace(marker)? string.Empty : marker;
             return this;
         }
 
@@ -149,24 +175,52 @@ namespace Minio
             return this;
         }
 
+        public GetObjectListArgs WithListObjectsV1(bool useV1)
+        {
+            this.UseV2 = !useV1;
+            return this;
+        }
+
         internal override RestRequest BuildRequest(RestRequest request)
         {
-            request.AddQueryParameter("list-type", "2");
             request.AddQueryParameter("delimiter",this.Delimiter);
-            request.AddQueryParameter("prefix",this.Prefix);
             request.AddQueryParameter("max-keys", "1000");
             request.AddQueryParameter("encoding-type","url");
-            if (!string.IsNullOrWhiteSpace(this.Marker))
+            if (!string.IsNullOrWhiteSpace(this.Prefix))
             {
-                request.AddQueryParameter("marker",this.Marker);
-            }
-            if (!string.IsNullOrWhiteSpace(this.ContinuationToken))
-            {
-                request.AddQueryParameter("continuation-token",this.ContinuationToken);
+                request.AddQueryParameter("prefix",this.Prefix);
             }
             if (this.Versions)
             {
                 request.AddQueryParameter("versions", "");
+                if (!string.IsNullOrWhiteSpace(this.Marker))
+                {
+                    request.AddQueryParameter("key-marker",this.Marker);
+                }
+                if (!string.IsNullOrWhiteSpace(this.VersionIdMarker))
+                {
+                    request.AddQueryParameter("version-id-marker",this.VersionIdMarker);
+                }
+            }
+            else if(!this.Versions && this.UseV2)
+            {
+                request.AddQueryParameter("list-type", "2");
+                if (!string.IsNullOrWhiteSpace(this.Marker))
+                {
+                    request.AddQueryParameter("start-after",this.Marker);
+                }
+                if (!string.IsNullOrWhiteSpace(this.ContinuationToken))
+                {
+                    request.AddQueryParameter("continuation-token",this.ContinuationToken);
+                }
+            }
+            else if (!this.Versions && !this.UseV2)
+            {
+                request.AddQueryParameter("marker",this.Marker);
+            }
+            else
+            {
+                throw new InvalidOperationException("Wrong set of properties set.");
             }
             return request;
         }

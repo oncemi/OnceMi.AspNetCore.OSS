@@ -15,35 +15,34 @@
  */
 
 using System;
-using System.Xml;
+using System.Collections.Generic;
 using System.Xml.Serialization;
 
-namespace Minio
+namespace Minio.DataModel.Tags
 {
-    public enum RetentionMode
-    {
-        GOVERNANCE,
-        COMPLIANCE
-    }
     [Serializable]
-    [XmlRoot(ElementName = "Retention", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
-    public class ObjectRetentionConfiguration
+    [XmlRoot(ElementName = "TagSet")]
+    public class TagSet
     {
-        [XmlElement("Mode")]
-        public RetentionMode Mode { get; set; }
-
-        [XmlElement("RetainUntilDate")]
-        public string RetainUntilDate { get; set; }
-
-        public ObjectRetentionConfiguration()
+        public TagSet()
         {
-            this.RetainUntilDate = null;
+            this.Tag = null;
         }
 
-        public ObjectRetentionConfiguration(DateTime date, RetentionMode mode = RetentionMode.GOVERNANCE)
+        public TagSet(Dictionary<string, string> tags)
         {
-            this.RetainUntilDate = utils.To8601String(date);
-            this.Mode = mode;
+            if (tags == null || tags.Count == 0)
+            {
+                return;
+            }
+            this.Tag = new List<Tag>();
+            foreach (var item in tags)
+            {
+                this.Tag.Add(new Tag(item.Key, item.Value));
+            }
         }
+
+        [XmlElement("Tag")]
+        public List<Tag> Tag { get; set; }
     }
 }

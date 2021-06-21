@@ -23,6 +23,8 @@ using System.Net;
 using System.Xml.Serialization;
 
 using Minio.DataModel;
+using Minio.DataModel.Tags;
+using Minio.DataModel.ObjectLock;
 using RestSharp;
 
 namespace Minio

@@ -24,6 +24,8 @@ using System.Xml;
 using System.Linq;
 
 using Minio.DataModel;
+using Minio.DataModel.Tags;
+using Minio.DataModel.ObjectLock;
 using Minio.Exceptions;
 using Minio.Helper;
 using System.Security.Cryptography;
@@ -598,11 +600,13 @@ namespace Minio
 
     public class RemoveObjectArgs : ObjectArgs<RemoveObjectArgs>
     {
-        public string VersionId { get; private set; }
+        internal string VersionId { get; private set; }
+        internal bool? BypassGovernanceMode { get; private set; }
 
         public RemoveObjectArgs()
         {
             this.RequestMethod = Method.DELETE;
+            this.BypassGovernanceMode = null;
         }
 
         internal override RestRequest BuildRequest(RestRequest request)
@@ -610,12 +614,23 @@ namespace Minio
             if (!string.IsNullOrEmpty(this.VersionId))
             {
                 request.AddQueryParameter("versionId",$"{this.VersionId}");
+                if (this.BypassGovernanceMode != null && this.BypassGovernanceMode.Value)
+                {
+                    request.AddOrUpdateParameter("x-amz-bypass-governance-retention", this.BypassGovernanceMode.Value.ToString(), ParameterType.HttpHeader);
+                }
             }
             return request;
         }
+
         public RemoveObjectArgs WithVersionId(string ver)
         {
             this.VersionId = ver;
+            return this;
+        }
+
+        public RemoveObjectArgs WithBypassGovernanceMode(bool? mode)
+        {
+            this.BypassGovernanceMode = mode;
             return this;
         }
     }
@@ -1923,6 +1938,7 @@ namespace Minio
             if (this.Retention != null)
             {
                 request.AddOrUpdateParameter("x-amz-object-lock-retain-until-date", this.Retention.RetainUntilDate, ParameterType.HttpHeader);
+                request.AddOrUpdateParameter("x-amz-object-lock-mode", this.Retention.Mode, ParameterType.HttpHeader);
             }
             if (this.LegalHoldEnabled != null)
             {

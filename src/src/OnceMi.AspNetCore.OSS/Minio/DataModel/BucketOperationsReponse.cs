@@ -17,6 +17,8 @@
 using Minio.DataModel;
 using Minio.DataModel.ILM;
 using Minio.DataModel.Replication;
+using Minio.DataModel.Tags;
+using Minio.DataModel.ObjectLock;
 
 using System;
 using System.Collections.Generic;
@@ -78,6 +80,7 @@ namespace Minio
         {
             this.ItemObservable = obs;
             string marker = string.Empty;
+            this.NextMarker = string.Empty;
             foreach (Item item in objectList.Item2)
             {
                 this.BucketObjectsLastItem = item;
@@ -111,18 +114,19 @@ namespace Minio
             }
         }
     }
-
     internal class ListObjectVersionResponse
     {
-        internal VersionItem BucketObjectsLastItem;
-        internal IObserver<VersionItem> ItemObservable;
+        internal Item BucketObjectsLastItem;
+        internal IObserver<Item> ItemObservable;
         internal string NextMarker { get; private set; }
+        internal string NextKeyMarker { get; private set; }
+        internal string NextVerMarker { get; private set; }
 
-        internal ListObjectVersionResponse(ListObjectsArgs args, Tuple<ListVersionsResult, List<VersionItem>> objectList, IObserver<VersionItem> obs)
+        internal ListObjectVersionResponse(ListObjectsArgs args, Tuple<ListVersionsResult, List<Item>> objectList, IObserver<Item> obs)
         {
             this.ItemObservable = obs;
             string marker = string.Empty;
-            foreach (VersionItem item in objectList.Item2)
+            foreach (Item item in objectList.Item2)
             {
                 this.BucketObjectsLastItem = item;
                 if (objectList.Item1.EncodingType == "url")
@@ -136,10 +140,14 @@ namespace Minio
                 if (objectList.Item1.EncodingType == "url")
                 {
                     NextMarker = HttpUtility.UrlDecode(objectList.Item1.NextMarker);
+                    NextKeyMarker = HttpUtility.UrlDecode(objectList.Item1.NextKeyMarker);
+                    NextVerMarker = HttpUtility.UrlDecode(objectList.Item1.NextVersionIdMarker);
                 }
                 else
                 {
                     NextMarker = objectList.Item1.NextMarker;
+                    NextKeyMarker = objectList.Item1.NextKeyMarker;
+                    NextVerMarker = objectList.Item1.NextVersionIdMarker;
                 }
             }
             else if (this.BucketObjectsLastItem != null)
@@ -147,10 +155,14 @@ namespace Minio
                 if (objectList.Item1.EncodingType == "url")
                 {
                     NextMarker = HttpUtility.UrlDecode(this.BucketObjectsLastItem.Key);
+                    NextKeyMarker = HttpUtility.UrlDecode(this.BucketObjectsLastItem.Key);
+                    NextVerMarker = HttpUtility.UrlDecode(this.BucketObjectsLastItem.VersionId);
                 }
                 else
                 {
                     NextMarker = this.BucketObjectsLastItem.Key;
+                    NextKeyMarker = this.BucketObjectsLastItem.Key;
+                    NextVerMarker = this.BucketObjectsLastItem.VersionId;
                 }
             }
         }
@@ -196,7 +208,7 @@ namespace Minio
     internal class GetObjectsVersionsListResponse : GenericResponse
     {
         internal ListVersionsResult BucketResult;
-        internal Tuple<ListVersionsResult, List<VersionItem>> ObjectsTuple;
+        internal Tuple<ListVersionsResult, List<Item>> ObjectsTuple;
         internal GetObjectsVersionsListResponse(HttpStatusCode statusCode, string responseContent)
                     : base(statusCode, responseContent)
         {
@@ -211,7 +223,7 @@ namespace Minio
             }
             XDocument root = XDocument.Parse(responseContent);
             var items = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Version")
-                        select new VersionItem
+                        select new Item
                         {
                             Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Key").Value,
                             LastModified = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}LastModified").Value,
@@ -221,7 +233,7 @@ namespace Minio
                             IsDir = false
                         };
             var prefixes = from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}CommonPrefixes")
-                           select new VersionItem
+                           select new Item
                            {
                                Key = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Prefix").Value,
                                IsDir = true

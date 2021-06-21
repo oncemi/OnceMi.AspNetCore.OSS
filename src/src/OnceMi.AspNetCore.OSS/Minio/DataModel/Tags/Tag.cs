@@ -17,29 +17,26 @@
 using System;
 using System.Xml.Serialization;
 
-namespace Minio.DataModel
+namespace Minio.DataModel.Tags
 {
     [Serializable]
-    [XmlRoot(ElementName = "LegalHold", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
+    [XmlRoot(ElementName = "Tag")]
 
-    // Legal Hold Configuration for the object. Status - {ON, OFF}.
-    public class ObjectLegalHoldConfiguration
+    public class Tag
     {
-        public ObjectLegalHoldConfiguration()
+        [XmlElement("Key")]
+        public string Key { get; set; }
+        [XmlElement("Value")]
+        public string Value { get; set; }
+        public Tag()
         {
-            this.Status = "OFF";
         }
 
-        public ObjectLegalHoldConfiguration(bool enable = true)
+        public Tag(string key, string value) 
         {
-            if (enable)
-            {
-                this.Status = "ON";
-                return;
-            }
-            this.Status = "OFF";
+            this.Key = key;
+            this.Value = value;
+               
         }
-
-        public string Status { get; set; }
     }
 }
