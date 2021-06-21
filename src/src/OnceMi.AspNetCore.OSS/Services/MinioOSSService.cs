@@ -682,7 +682,6 @@ namespace OnceMi.AspNetCore.OSS
                 ex =>
                 {
                     isFinish = true;
-                    throw ex;
                 },
                 () =>
                 {

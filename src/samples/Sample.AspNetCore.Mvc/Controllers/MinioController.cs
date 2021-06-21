@@ -85,9 +85,9 @@ namespace Sample.AspNetCore.Mvc.Controllers
         {
             try
             {
-                await _OSSService.GetObjectAsync(_bucketName, "appsettings.json", (stream) =>
+                await _OSSService.GetObjectAsync(_bucketName, "PHOTO-1.jpg", (stream) =>
                 {
-                    using (FileStream fs = new FileStream("appsettings.json", FileMode.Create, FileAccess.Write))
+                    using (FileStream fs = new FileStream("PHOTO-1.jpg", FileMode.Create, FileAccess.Write))
                     {
                         stream.CopyTo(fs);
                         fs.Close();
@@ -107,7 +107,7 @@ namespace Sample.AspNetCore.Mvc.Controllers
         {
             try
             {
-                await _OSSService.PutObjectAsync(_bucketName, "PHOTO-1.jpg", @"C:\Users\sysru\Desktop\PHOTO-1.jpg");
+                await _OSSService.PutObjectAsync(_bucketName, "PHOTO-1.jpg", @"PHOTO-1.jpg");
                 return Json("OK");
             }
             catch (Exception ex)
@@ -120,10 +120,10 @@ namespace Sample.AspNetCore.Mvc.Controllers
         {
             try
             {
-                byte[] bs = System.IO.File.ReadAllBytes("1.png");
+                byte[] bs = System.IO.File.ReadAllBytes("PHOTO-1.jpg");
                 using (MemoryStream filestream = new MemoryStream(bs))
                 {
-                    await _OSSService.PutObjectAsync(_bucketName, "1.png", filestream);
+                    await _OSSService.PutObjectAsync(_bucketName, "PHOTO-1.jpg", filestream);
                 }
 
                 return Json("OK");
