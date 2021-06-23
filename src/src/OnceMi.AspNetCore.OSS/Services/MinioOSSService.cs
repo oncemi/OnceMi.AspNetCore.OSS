@@ -370,7 +370,7 @@ namespace OnceMi.AspNetCore.OSS
             bool found = await BucketExistsAsync(bucketName);
             if (found)
             {
-                throw new Exception($"Bucket '{bucketName}' already exists");
+                return true;
             }
             else
             {
