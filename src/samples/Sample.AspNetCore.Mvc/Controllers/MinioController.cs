@@ -29,6 +29,19 @@ namespace Sample.AspNetCore.Mvc.Controllers
             return View();
         }
 
+        public async Task<IActionResult> BucketExists()
+        {
+            try
+            {
+                bool result = await _OSSService.BucketExistsAsync(_bucketName);
+                return Content(result.ToString());
+            }
+            catch (Exception ex)
+            {
+                return Content(ex.Message);
+            }
+        }
+
         public async Task<IActionResult> CreateBucket()
         {
             try

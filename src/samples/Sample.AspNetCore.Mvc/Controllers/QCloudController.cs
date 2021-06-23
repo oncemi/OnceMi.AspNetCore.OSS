@@ -121,19 +121,6 @@ namespace Sample.AspNetCore.Mvc.Controllers
             }
         }
 
-        public async Task<IActionResult> GetBucketWebsiteUrl()
-        {
-            try
-            {
-                var result = await (_OSSService as IAliyunOSSService).GetBucketEndpointAsync(_bucketName);
-                return Json(result);
-            }
-            catch (Exception ex)
-            {
-                return Content(ex.Message);
-            }
-        }
-
         public async Task<IActionResult> GetObject()
         {
             try

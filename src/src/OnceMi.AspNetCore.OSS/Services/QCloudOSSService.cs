@@ -1,5 +1,6 @@
 ﻿using COSXML;
 using COSXML.Common;
+using COSXML.CosException;
 using COSXML.Model.Bucket;
 using COSXML.Model.Object;
 using COSXML.Model.Service;
@@ -40,7 +41,7 @@ namespace OnceMi.AspNetCore.OSS
 
         #region bucekt
 
-        public async Task<bool> BucketExistsAsync(string bucketName)
+        public Task<bool> BucketExistsAsync(string bucketName)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
@@ -51,7 +52,7 @@ namespace OnceMi.AspNetCore.OSS
             try
             {
                 HeadBucketResult result = _client.HeadBucket(request);
-                return await Task.FromResult(true);
+                return Task.FromResult(true);
             }
             catch (COSXML.CosException.CosClientException ex)
             {
@@ -61,11 +62,11 @@ namespace OnceMi.AspNetCore.OSS
             {
                 if (ex.statusCode == 403)
                 {
-                    return await Task.FromResult(true);
+                    return Task.FromResult(true);
                 }
                 else if (ex.statusCode == 404)
                 {
-                    return await Task.FromResult(false);
+                    return Task.FromResult(false);
                 }
                 else
                 {
@@ -81,10 +82,25 @@ namespace OnceMi.AspNetCore.OSS
                 throw new ArgumentNullException(nameof(bucketName));
             }
             bucketName = ConvertBucketName(bucketName);
-            PutBucketRequest request = new PutBucketRequest(bucketName);
-            //执行请求
-            _client.PutBucket(request);
-            return Task.FromResult(true);
+            try
+            {
+                PutBucketRequest request = new PutBucketRequest(bucketName);
+                //执行请求
+                _client.PutBucket(request);
+                return Task.FromResult(true);
+            }
+            catch (CosServerException serverEx)
+            {
+                if (serverEx.statusCode == 409 && serverEx.statusMessage.Equals("Conflict", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new BucketExistException($"Bucket '{bucketName}' already exists.", serverEx);
+                }
+                throw;
+            }
+            catch(Exception ex)
+            {
+                throw new Exception($"Create bucket {bucketName} failed, {ex.Message}", ex);
+            }
         }
 
         public Task<List<Bucket>> ListBucketsAsync()

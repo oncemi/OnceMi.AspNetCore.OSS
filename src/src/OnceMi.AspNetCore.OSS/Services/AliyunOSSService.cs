@@ -35,7 +35,7 @@ namespace OnceMi.AspNetCore.OSS
 
         #region Bucket
 
-        public async Task<List<Bucket>> ListBucketsAsync()
+        public Task<List<Bucket>> ListBucketsAsync()
         {
             IEnumerable<Aliyun.OSS.Bucket> buckets = _client.ListBuckets();
             if (buckets == null)
@@ -44,7 +44,7 @@ namespace OnceMi.AspNetCore.OSS
             }
             if (buckets.Count() == 0)
             {
-                return await Task.FromResult(new List<Bucket>());
+                return Task.FromResult(new List<Bucket>());
             }
             var resultList = new List<Bucket>();
             foreach (var item in buckets)
@@ -58,10 +58,10 @@ namespace OnceMi.AspNetCore.OSS
                         Name = item.Owner.DisplayName,
                         Id = item.Owner.Id
                     },
-                    CreationDate = item.CreationDate.ToString(),
+                    CreationDate = item.CreationDate.ToString("yyyy-MM-dd HH:mm:ss"),
                 });
             }
-            return await Task.FromResult(resultList);
+            return Task.FromResult(resultList);
         }
 
         public Task<bool> BucketExistsAsync(string bucketName)
@@ -79,12 +79,26 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
+            //检查桶是否存在
+            Bucket bucket = ListBucketsAsync().Result?.Where(p=>p.Name == bucketName)?.FirstOrDefault();
+            if(bucket != null)
+            {
+                string localtion = Options.Endpoint?.Split('.')[0];
+                if (bucket.Location.Equals(localtion, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new BucketExistException($"Bucket '{bucketName}' already exists.");
+                }
+                else
+                {
+                    throw new BucketExistException($"There have a same name bucket '{bucketName}' in other localtion '{bucket.Location}'.");
+                }
+            }
             var request = new CreateBucketRequest(bucketName)
             {
                 //设置存储空间访问权限ACL。
                 ACL = CannedAccessControlList.Private,
                 //设置数据容灾类型。
-                DataRedundancyType = DataRedundancyType.ZRS
+                DataRedundancyType = DataRedundancyType.LRS
             };
             // 创建存储空间。
             var result = _client.CreateBucket(request);

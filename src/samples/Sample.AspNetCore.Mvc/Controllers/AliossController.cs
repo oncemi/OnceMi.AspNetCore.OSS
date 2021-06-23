@@ -13,7 +13,7 @@ namespace Sample.AspNetCore.Mvc.Controllers
     {
         private readonly ILogger<AliossController> _logger;
         private readonly IOSSService _OSSService;
-        private readonly string _bucketName = "default-dev";
+        private readonly string _bucketName = "default-dev-a";
 
         public AliossController(ILogger<AliossController> logger
             , IOSSServiceFactory ossServiceFactory)
@@ -28,6 +28,19 @@ namespace Sample.AspNetCore.Mvc.Controllers
         }
 
         #region Bucket
+
+        public async Task<IActionResult> BucketExists()
+        {
+            try
+            {
+                bool result = await _OSSService.BucketExistsAsync(_bucketName);
+                return Content(result.ToString());
+            }
+            catch (Exception ex)
+            {
+                return Content(ex.Message);
+            }
+        }
 
         public async Task<IActionResult> CreateBucket()
         {
