@@ -142,7 +142,7 @@ public async Task<IActionResult> ListBuckets()
 ##### CreateBucketAsync  
 `Task<bool> CreateBucketAsync(string bucketName);`
 
-创建一个储存桶。如果当前储存桶存在，则直接返回True。  
+创建一个储存桶。如果当前储存桶存在，将抛出异常`BucketExistException`。  
 
 ##### ListBucketsAsync  
 `Task<bool> ListBucketsAsync();`
