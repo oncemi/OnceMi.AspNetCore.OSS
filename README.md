@@ -329,8 +329,9 @@ Task<ItemMeta> GetObjectMetadataAsync(string bucketName
   
 ## Update Logs
 #### 1.0.5  
+（本次更新不涉及API更新，可直接更新Nuget包）  
 1. Minio和腾讯云上传文件时，从filename获取contenttype（[@YaChengMu](https://github.com/YaChengMu "YaChengMu")）  
-（本次更新不涉及API更新，可直接更新Nuget包） 
+ 
   
 #### 1.0.4  
 （本次更新不涉及API更新，可直接更新Nuget包） 
