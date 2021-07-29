@@ -324,12 +324,16 @@ Task<ItemMeta> GetObjectMetadataAsync(string bucketName
 3. Newtonsoft.Json
 4. Tencent.QCloud.Cos.Sdk
 
-## To do list
-1. 修改签名URL过期策略为滑动过期策略(最近比较忙，一个月之内)
-
+## To do list  
+1. 修改签名URL过期策略为滑动过期策略(最近比较忙，一个月之内)  
+  
 ## Update Logs
-#### 1.0.4
-（本次更新不涉及API更新，可直接更新Nuget包）
-1. 更新Minio依赖，同时更新Minio调用方式
-2. 更新腾讯云Nuget包
-3. 移除EasyCaching，使用Microsoft.Extensions.Caching.Memory
+#### 1.0.5  
+1. Minio和腾讯云上传文件时，从filename获取contenttype（[@YaChengMu](https://github.com/YaChengMu "YaChengMu")）  
+（本次更新不涉及API更新，可直接更新Nuget包） 
+  
+#### 1.0.4  
+（本次更新不涉及API更新，可直接更新Nuget包） 
+1. 更新Minio依赖，同时更新Minio调用方式  
+2. 更新腾讯云Nuget包  
+3. 移除EasyCaching，使用Microsoft.Extensions.Caching.Memory  
