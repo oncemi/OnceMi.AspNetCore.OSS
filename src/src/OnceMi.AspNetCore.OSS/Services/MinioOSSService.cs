@@ -756,6 +756,10 @@ namespace OnceMi.AspNetCore.OSS
                     new FileExtensionContentTypeProvider().TryGetContentType(fileName, out contentType);
                 }
             }
+            else
+            {
+                new FileExtensionContentTypeProvider().TryGetContentType(objectName, out contentType);
+            }
             if (string.IsNullOrEmpty(contentType))
             {
                 contentType = "application/octet-stream";
