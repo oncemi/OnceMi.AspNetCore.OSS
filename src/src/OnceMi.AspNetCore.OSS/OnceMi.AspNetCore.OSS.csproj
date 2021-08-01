@@ -5,14 +5,15 @@
     <Description>ASP.NET Core对象储存扩展。支持Minio自建对象储存，阿里云OSS，腾讯云COS。</Description>
     <Company>OnceMi</Company>
     <Authors>OnceMi</Authors>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
-    <FileVersion>1.0.5.0</FileVersion>
-    <Version>1.0.5</Version>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <FileVersion>1.0.6.0</FileVersion>
+    <Version>1.0.6</Version>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/oncemi/OnceMi.AspNetCore.OSS</RepositoryUrl>
     <PackageProjectUrl>https://github.com/oncemi/OnceMi.AspNetCore.OSS</PackageProjectUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <RepositoryType>Github</RepositoryType>
+    <PackageReleaseNotes>修复错误：MinIO API responded with message=Access denied on the resource: ******/</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
