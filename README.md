@@ -328,11 +328,14 @@ Task<ItemMeta> GetObjectMetadataAsync(string bucketName
 1. 修改签名URL过期策略为滑动过期策略(最近比较忙，一个月之内)  
   
 ## Update Logs
+#### 1.0.6  
+（本次更新不涉及API更新，可直接更新Nuget包）  
+1. 修复在使用Minio时，反向代理后BucketExistsAsync报错：MinIO API responded with message=Access denied on the resource: ******/  
+  
 #### 1.0.5  
 （本次更新不涉及API更新，可直接更新Nuget包）  
 1. Minio和腾讯云上传文件时，从filename获取contenttype（[@YaChengMu](https://github.com/YaChengMu "YaChengMu")）  
  
-  
 #### 1.0.4  
 （本次更新不涉及API更新，可直接更新Nuget包） 
 1. 更新Minio依赖，同时更新Minio调用方式  
