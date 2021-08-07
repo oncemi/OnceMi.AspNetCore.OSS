@@ -631,26 +631,22 @@ namespace OnceMi.AspNetCore.OSS
                 throw new ArgumentNullException(nameof(bucketName));
             }
             objectName = FormatObjectName(objectName);
-            List<Item> items = await ListObjectsAsync(bucketName, objectName);
-            if (items != null && items.Count > 0)
+            try
             {
-                Item result = items.Where(p => p.Key == objectName).FirstOrDefault();
-                if (result != null)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                var result = await GetObjectMetadataAsync(bucketName, objectName);
+                return result != null;
             }
-            else
+            catch (ObjectNotFoundException)
             {
                 return false;
             }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
-        public async Task<List<Item>> ListObjectsAsync(string bucketName, string prefix = null)
+        public Task<List<Item>> ListObjectsAsync(string bucketName, string prefix = null)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
@@ -691,7 +687,7 @@ namespace OnceMi.AspNetCore.OSS
             {
                 Thread.Sleep(0);
             }
-            return result;
+            return Task.FromResult(result);
         }
 
         public Task GetObjectAsync(string bucketName, string objectName, Action<Stream> callback, CancellationToken cancellationToken = default)

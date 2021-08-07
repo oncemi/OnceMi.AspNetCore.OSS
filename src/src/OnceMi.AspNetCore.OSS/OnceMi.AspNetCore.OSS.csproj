@@ -5,9 +5,9 @@
     <Description>ASP.NET Core对象储存扩展。支持Minio自建对象储存，阿里云OSS，腾讯云COS。</Description>
     <Company>OnceMi</Company>
     <Authors>OnceMi</Authors>
-    <AssemblyVersion>1.0.7.0</AssemblyVersion>
-    <FileVersion>1.0.7.0</FileVersion>
-    <Version>1.0.7</Version>
+    <AssemblyVersion>1.0.8.0</AssemblyVersion>
+    <FileVersion>1.0.8.0</FileVersion>
+    <Version>1.0.8</Version>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/oncemi/OnceMi.AspNetCore.OSS</RepositoryUrl>
     <PackageProjectUrl>https://github.com/oncemi/OnceMi.AspNetCore.OSS</PackageProjectUrl>
