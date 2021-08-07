@@ -333,9 +333,9 @@ Task<ItemMeta> GetObjectMetadataAsync(string bucketName
 ## Update Logs
 #### 1.0.7  
 （本次更新不涉及API更新，可直接更新Nuget包）  
-1、重新编写Demo，覆盖完整的Api
-2、修复URL缓存中的一个bug（区分服务）
-3、优化代码
+1、重新编写Demo，覆盖完整的Api  
+2、修复URL缓存中的一个bug（区分服务）  
+3、优化代码  
 
 #### 1.0.6  
 （本次更新不涉及API更新，可直接更新Nuget包）  
