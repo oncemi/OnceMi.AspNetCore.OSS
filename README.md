@@ -331,6 +331,10 @@ Task<ItemMeta> GetObjectMetadataAsync(string bucketName
 2. 文件分页加载
   
 ## Update Logs
+#### 1.0.8  
+（本次更新不涉及API更新，可直接更新Nuget包）  
+1、优化Minio ObjectsExistsAsync
+
 #### 1.0.7  
 （本次更新不涉及API更新，可直接更新Nuget包）  
 1、重新编写Demo，覆盖完整的Api  
