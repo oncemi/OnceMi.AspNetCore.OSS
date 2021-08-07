@@ -30,23 +30,21 @@ namespace Sample.AspNetCore.Mvc
             {
                 option.Provider = OSSProvider.Minio;
                 option.Endpoint = "192.168.100.252:9000";
-                option.AccessKey = "root";
-                option.SecretKey = "uZapbJwj82CoyHcrztA5K9Mx";
+                option.AccessKey = "r***********t";
+                option.SecretKey = "u*****************x";
                 option.IsEnableHttps = false;
                 option.IsEnableCache = true;
             });
-
             //aliyun oss
             //添加名称为‘aliyunoss’的OSS对象储存配置信息
             services.AddOSSService("aliyunoss", option =>
             {
                  option.Provider = OSSProvider.Aliyun;
                  option.Endpoint = "oss-cn-hangzhou.aliyuncs.com";
-                 option.AccessKey = "LTAI5tS4xmXhF7TnbZaNUV4U";
-                 option.SecretKey = "Djyc2QRSbje5tOHFH90bom8ksHp6QM";
+                 option.AccessKey = "L*********************U";
+                 option.SecretKey = "D**************************M";
                  option.IsEnableCache = true;
             });
-
             //qcloud oss
             //从配置文件中加载节点为‘OSSProvider’的配置信息
             services.AddOSSService("QCloud", "OSSProvider");
