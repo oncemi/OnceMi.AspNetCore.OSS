@@ -45,7 +45,7 @@ namespace Minio
             args.Validate();
             try
             {
-                RestRequest request = await this.CreateRequest(Method.GET, args.BucketName).ConfigureAwait(false);
+                RestRequest request = await this.CreateRequest(Method.HEAD, args.BucketName).ConfigureAwait(false);
                 var response = await this.ExecuteAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
             }
             catch (InternalClientException ice)

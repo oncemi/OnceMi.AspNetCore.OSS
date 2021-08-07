@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace OnceMi.AspNetCore.OSS
 {
-    public class MinioOSSService : IMinioOSSService
+    public class MinioOSSService : IBaseOSSService, IMinioOSSService
     {
         private readonly IMemoryCache _cache;
         private readonly MinioClient _client = null;
@@ -52,10 +52,7 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            if (string.IsNullOrEmpty(objectName))
-            {
-                throw new ArgumentNullException(nameof(objectName));
-            }
+            objectName = FormatObjectName(objectName);
             RemoveIncompleteUploadArgs args = new RemoveIncompleteUploadArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName);
@@ -102,7 +99,7 @@ namespace OnceMi.AspNetCore.OSS
                 });
             while (!isFinish)
             {
-                await Task.Delay(1);
+                Thread.Sleep(0);
             }
             return result;
         }
@@ -303,13 +300,14 @@ namespace OnceMi.AspNetCore.OSS
             }
             foreach (var item in info.Statement)
             {
-                bool isFindSource = false;
+                bool result = true;
+                bool findSource = false;
                 if (item.Resource.Count == 1)
                 {
                     if ((IsRootResource(bucketName, item.Resource[0]) && IsRootResource(bucketName, statement.Resource[0]))
                         || item.Resource[0].Equals(statement.Resource[0]))
                     {
-                        isFindSource = true;
+                        findSource = true;
                     }
                 }
                 else
@@ -319,29 +317,33 @@ namespace OnceMi.AspNetCore.OSS
                         if (sourceitem.Equals(statement.Resource[0])
                             && item.Effect.Equals(statement.Effect, StringComparison.OrdinalIgnoreCase))
                         {
-                            isFindSource = true;
+                            findSource = true;
                         }
                     }
                 }
-                if (!isFindSource)
-                {
-                    continue;
-                }
+                if (!findSource) continue;
                 //验证规则
                 if (!item.Effect.Equals(statement.Effect))
                 {
-                    return false;
+                    //访问权限
+                    continue;
                 }
                 if (item.Action.Count < statement.Action.Count)
                 {
-                    return false;
+                    //动作，如果存在的条目数量少于要验证的，false
+                    continue;
                 }
                 foreach (var actionItem in statement.Action)
                 {
-                    if (!item.Action.Exists(p => p.Equals(actionItem, StringComparison.OrdinalIgnoreCase)))
+                    //验证action
+                    if (!item.Action.Any(p => p.Equals(actionItem, StringComparison.OrdinalIgnoreCase)))
                     {
-                        return false;
+                        result = false;
                     }
+                }
+                if (result)
+                {
+                    return result;
                 }
             }
             return false;
@@ -628,10 +630,7 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            if (string.IsNullOrEmpty(objectName))
-            {
-                throw new ArgumentNullException(nameof(objectName));
-            }
+            objectName = FormatObjectName(objectName);
             List<Item> items = await ListObjectsAsync(bucketName, objectName);
             if (items != null && items.Count > 0)
             {
@@ -690,7 +689,7 @@ namespace OnceMi.AspNetCore.OSS
 
             while (!isFinish)
             {
-                await Task.Delay(1);
+                Thread.Sleep(0);
             }
             return result;
         }
@@ -701,10 +700,7 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            if (string.IsNullOrEmpty(objectName))
-            {
-                throw new ArgumentNullException(nameof(objectName));
-            }
+            objectName = FormatObjectName(objectName);
             GetObjectArgs args = new GetObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName)
@@ -721,10 +717,7 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            if (string.IsNullOrEmpty(objectName))
-            {
-                throw new ArgumentNullException(nameof(objectName));
-            }
+            objectName = FormatObjectName(objectName);
             string path = Path.GetDirectoryName(fileName);
             if (!string.IsNullOrEmpty(path) && !Directory.Exists(path))
             {
@@ -743,10 +736,7 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            if (string.IsNullOrEmpty(objectName))
-            {
-                throw new ArgumentNullException(nameof(objectName));
-            }
+            objectName = FormatObjectName(objectName);
             string contentType = "application/octet-stream";
             if (data is FileStream fileStream)
             {
@@ -780,10 +770,7 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            if (string.IsNullOrEmpty(objectName))
-            {
-                throw new ArgumentNullException(nameof(objectName));
-            }
+            objectName = FormatObjectName(objectName);
             if (!File.Exists(filePath))
             {
                 throw new Exception("File not exist.");
@@ -813,10 +800,7 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            if (string.IsNullOrEmpty(objectName))
-            {
-                throw new ArgumentNullException(nameof(objectName));
-            }
+            objectName = FormatObjectName(objectName);
             StatObjectArgs args = new StatObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName)
@@ -846,18 +830,12 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            if (string.IsNullOrEmpty(objectName))
-            {
-                throw new ArgumentNullException(nameof(objectName));
-            }
+            objectName = FormatObjectName(objectName);
             if (string.IsNullOrEmpty(destBucketName))
             {
                 destBucketName = bucketName;
             }
-            if (string.IsNullOrEmpty(destObjectName))
-            {
-                destObjectName = objectName;
-            }
+            destObjectName = FormatObjectName(destObjectName);
             CopySourceObjectArgs cpSrcArgs = new CopySourceObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName);
@@ -875,10 +853,7 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            if (string.IsNullOrEmpty(objectName))
-            {
-                throw new ArgumentNullException(nameof(objectName));
-            }
+            objectName = FormatObjectName(objectName);
             RemoveObjectArgs args = new RemoveObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName);
@@ -896,9 +871,14 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(objectNames));
             }
+            List<string> delObjects = new List<string>();
+            foreach (var item in objectNames)
+            {
+                delObjects.Add(FormatObjectName(item));
+            }
             RemoveObjectsArgs args = new RemoveObjectsArgs()
                 .WithBucket(bucketName)
-                .WithObjects(objectNames);
+                .WithObjects(delObjects);
             IObservable<Minio.Exceptions.DeleteError> observable = await _client.RemoveObjectsAsync(args);
             List<string> removeFailed = new List<string>();
 
@@ -919,11 +899,11 @@ namespace OnceMi.AspNetCore.OSS
                });
             while (!isFinish)
             {
-                await Task.Delay(1);
+                Thread.Sleep(0);
             }
             if (removeFailed.Count > 0)
             {
-                if (removeFailed.Count == objectNames.Count)
+                if (removeFailed.Count == delObjects.Count)
                 {
                     throw new Exception("Remove all object failed.");
                 }
@@ -957,23 +937,21 @@ namespace OnceMi.AspNetCore.OSS
         /// </summary>
         /// <param name="bucketName"></param>
         /// <param name="objectName"></param>
-        public void RemovePresignedUrlCache(string bucketName, string objectName)
+        public Task RemovePresignedUrlCache(string bucketName, string objectName)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            if (string.IsNullOrEmpty(objectName))
-            {
-                throw new ArgumentNullException(nameof(objectName));
-            }
+            objectName = FormatObjectName(objectName);
             if (Options.IsEnableCache)
             {
-                string key = Encrypt.MD5($"{bucketName}_{objectName}_{PresignedObjectType.Put.ToString().ToUpper()}");
+                string key = BuildPresignedObjectCacheKey(bucketName, objectName, PresignedObjectType.Get);
                 _cache.Remove(key);
-                key = Encrypt.MD5($"{bucketName}_{objectName}_{PresignedObjectType.Get.ToString().ToUpper()}");
+                key = BuildPresignedObjectCacheKey(bucketName, objectName, PresignedObjectType.Put);
                 _cache.Remove(key);
             }
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -1002,9 +980,10 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            if (string.IsNullOrEmpty(objectName))
+            objectName = FormatObjectName(objectName);
+            if (!objectName.StartsWith(bucketName))
             {
-                throw new ArgumentNullException(nameof(objectName));
+                objectName = $"{bucketName}/{objectName}";
             }
             List<StatementItem> statementItems = new List<StatementItem>();
             switch (mode)
@@ -1131,9 +1110,10 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            if (string.IsNullOrEmpty(objectName))
+            objectName = FormatObjectName(objectName);
+            if (!objectName.StartsWith(bucketName))
             {
-                throw new ArgumentNullException(nameof(objectName));
+                objectName = $"{bucketName}/{objectName}";
             }
             //获取存储桶默认权限
             AccessMode bucketMode = await GetBucketAclAsync(bucketName);
@@ -1237,9 +1217,10 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            if (string.IsNullOrEmpty(objectName))
+            objectName = FormatObjectName(objectName);
+            if (!objectName.StartsWith(bucketName))
             {
-                throw new ArgumentNullException(nameof(objectName));
+                objectName = $"{bucketName}/{objectName}";
             }
             PolicyInfo info = await GetPolicyAsync(bucketName);
             if (info == null || info.Statement == null || info.Statement.Count == 0)
@@ -1287,10 +1268,7 @@ namespace OnceMi.AspNetCore.OSS
                 {
                     throw new ArgumentNullException(nameof(bucketName));
                 }
-                if (string.IsNullOrEmpty(objectName))
-                {
-                    throw new ArgumentNullException(nameof(objectName));
-                }
+                objectName = FormatObjectName(objectName);
                 if (expiresInt <= 0)
                 {
                     throw new Exception("ExpiresIn time can not less than 0.");
@@ -1303,7 +1281,7 @@ namespace OnceMi.AspNetCore.OSS
 
                 if (Options.IsEnableCache && expiresInt > minExpiresInt)
                 {
-                    string key = Encrypt.MD5($"{bucketName}_{objectName}_{type.ToString().ToUpper()}");
+                    string key = BuildPresignedObjectCacheKey(bucketName, objectName, type);
                     var cacheResult = _cache.Get<PresignedUrlCache>(key);
                     PresignedUrlCache cache = cacheResult != null ? cacheResult : null;
                     //Unix时间
@@ -1324,22 +1302,31 @@ namespace OnceMi.AspNetCore.OSS
                         {
                             throw new Exception($"Object '{objectName}' not in bucket '{bucketName}'.");
                         }
-                        string presignedUrl = await PresignedGetOrPutObject(bucketName, objectName, expiresInt, type);
-                        if (string.IsNullOrEmpty(presignedUrl))
+                        AccessMode accessMode = await this.GetObjectAclAsync(bucketName, objectName);
+                        if (type == PresignedObjectType.Get 
+                            && (accessMode == AccessMode.PublicRead || accessMode == AccessMode.PublicReadWrite))
                         {
-                            throw new Exception("Result url is null.");
+                            return $"{(Options.IsEnableHttps ? "https" : "http")}://{Options.Endpoint}/{bucketName}{(objectName.StartsWith("/") ? objectName : $"/{objectName}")}";
                         }
-                        PresignedUrlCache urlCache = new PresignedUrlCache()
+                        else
                         {
-                            Url = presignedUrl,
-                            CreateTime = nowTime,
-                            Name = objectName,
-                            BucketName = bucketName,
-                            Type = type
-                        };
-                        int randomSec = new Random().Next(5, 30);
-                        _cache.Set(key, urlCache, TimeSpan.FromSeconds(expiresInt + randomSec));
-                        return urlCache.Url;
+                            string presignedUrl = await PresignedGetOrPutObject(bucketName, objectName, expiresInt, type);
+                            if (string.IsNullOrEmpty(presignedUrl))
+                            {
+                                throw new Exception("Result url is null.");
+                            }
+                            PresignedUrlCache urlCache = new PresignedUrlCache()
+                            {
+                                Url = presignedUrl,
+                                CreateTime = nowTime,
+                                Name = objectName,
+                                BucketName = bucketName,
+                                Type = type
+                            };
+                            int randomSec = new Random().Next(5, 30);
+                            _cache.Set(key, urlCache, TimeSpan.FromSeconds(expiresInt + randomSec));
+                            return urlCache.Url;
+                        }
                     }
                 }
                 else

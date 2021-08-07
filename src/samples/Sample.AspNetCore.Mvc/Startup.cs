@@ -29,10 +29,10 @@ namespace Sample.AspNetCore.Mvc
             services.AddOSSService(option =>
             {
                 option.Provider = OSSProvider.Minio;
-                option.Endpoint = "oss.oncemi.com";
-                option.AccessKey = "Q**********9";
-                option.SecretKey = "A***********************Q";
-                option.IsEnableHttps = true;
+                option.Endpoint = "192.168.100.252:9000";
+                option.AccessKey = "root";
+                option.SecretKey = "uZapbJwj82CoyHcrztA5K9Mx";
+                option.IsEnableHttps = false;
                 option.IsEnableCache = true;
             });
 
@@ -42,8 +42,8 @@ namespace Sample.AspNetCore.Mvc
             {
                  option.Provider = OSSProvider.Aliyun;
                  option.Endpoint = "oss-cn-hangzhou.aliyuncs.com";
-                 option.AccessKey = "L************U";
-                 option.SecretKey = "5***********************T";
+                 option.AccessKey = "LTAI5tS4xmXhF7TnbZaNUV4U";
+                 option.SecretKey = "Djyc2QRSbje5tOHFH90bom8ksHp6QM";
                  option.IsEnableCache = true;
             });
 

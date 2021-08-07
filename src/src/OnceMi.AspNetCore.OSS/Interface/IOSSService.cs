@@ -153,7 +153,7 @@ namespace OnceMi.AspNetCore.OSS
         /// </summary>
         /// <param name="bucketName"></param>
         /// <param name="objectName"></param>
-        void RemovePresignedUrlCache(string bucketName, string objectName);
+        Task RemovePresignedUrlCache(string bucketName, string objectName);
 
         /// <summary>
         /// 生成一个给HTTP GET请求用的presigned URL。浏览器/移动端的客户端可以用这个URL进行下载，即使其所在的存储桶是私有的。这个presigned URL可以设置一个失效时间，默认值是7天。

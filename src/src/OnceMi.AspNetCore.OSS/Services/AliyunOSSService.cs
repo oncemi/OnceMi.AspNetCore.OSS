@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace OnceMi.AspNetCore.OSS
 {
-    public class AliyunOSSService : IAliyunOSSService
+    public class AliyunOSSService : IBaseOSSService, IAliyunOSSService
     {
         private readonly IMemoryCache _cache;
         private readonly OssClient _client = null;
@@ -80,8 +80,8 @@ namespace OnceMi.AspNetCore.OSS
                 throw new ArgumentNullException(nameof(bucketName));
             }
             //检查桶是否存在
-            Bucket bucket = ListBucketsAsync().Result?.Where(p=>p.Name == bucketName)?.FirstOrDefault();
-            if(bucket != null)
+            Bucket bucket = ListBucketsAsync().Result?.Where(p => p.Name == bucketName)?.FirstOrDefault();
+            if (bucket != null)
             {
                 string localtion = Options.Endpoint?.Split('.')[0];
                 if (bucket.Location.Equals(localtion, StringComparison.OrdinalIgnoreCase))
@@ -233,10 +233,7 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            if (string.IsNullOrEmpty(objectName))
-            {
-                throw new ArgumentNullException(nameof(objectName));
-            }
+            objectName = FormatObjectName(objectName);
             var obj = _client.GetObject(bucketName, objectName);
             callback(obj.Content);
             return Task.CompletedTask;
@@ -248,10 +245,7 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            if (string.IsNullOrEmpty(objectName))
-            {
-                throw new ArgumentNullException(nameof(objectName));
-            }
+            objectName = FormatObjectName(objectName);
             if (string.IsNullOrEmpty(fileName))
             {
                 throw new ArgumentNullException(nameof(fileName));
@@ -317,30 +311,25 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            if (string.IsNullOrEmpty(objectName))
-            {
-                throw new ArgumentNullException(nameof(objectName));
-            }
+            objectName = FormatObjectName(objectName);
             return Task.FromResult(_client.DoesObjectExist(bucketName, objectName));
         }
 
-        public void RemovePresignedUrlCache(string bucketName, string objectName)
+        public Task RemovePresignedUrlCache(string bucketName, string objectName)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            if (string.IsNullOrEmpty(objectName))
-            {
-                throw new ArgumentNullException(nameof(objectName));
-            }
+            objectName = FormatObjectName(objectName);
             if (Options.IsEnableCache)
             {
-                string key = Encrypt.MD5($"{bucketName}_{objectName}_{PresignedObjectType.Put.ToString().ToUpper()}");
+                string key = BuildPresignedObjectCacheKey(bucketName, objectName, PresignedObjectType.Get);
                 _cache.Remove(key);
-                key = Encrypt.MD5($"{bucketName}_{objectName}_{PresignedObjectType.Get.ToString().ToUpper()}");
+                key = BuildPresignedObjectCacheKey(bucketName, objectName, PresignedObjectType.Put);
                 _cache.Remove(key);
             }
+            return Task.CompletedTask;
         }
 
         public Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt)
@@ -359,10 +348,7 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            if (string.IsNullOrEmpty(objectName))
-            {
-                throw new ArgumentNullException(nameof(objectName));
-            }
+            objectName = FormatObjectName(objectName);
             var result = _client.PutObject(bucketName, objectName, data);
             if (result != null)
             {
@@ -380,10 +366,7 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            if (string.IsNullOrEmpty(objectName))
-            {
-                throw new ArgumentNullException(nameof(objectName));
-            }
+            objectName = FormatObjectName(objectName);
             if (!File.Exists(filePath))
             {
                 throw new Exception("Upload file is not exist.");
@@ -407,24 +390,18 @@ namespace OnceMi.AspNetCore.OSS
         /// <param name="destBucketName"></param>
         /// <param name="destObjectName"></param>
         /// <returns></returns>
-        public Task<bool> CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null)
+        public Task<bool> CopyObjectAsync(string bucketName, string objectName, string destBucketName = null, string destObjectName = null)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            if (string.IsNullOrEmpty(objectName))
-            {
-                throw new ArgumentNullException(nameof(objectName));
-            }
+            objectName = FormatObjectName(objectName);
             if (string.IsNullOrEmpty(destBucketName))
             {
                 destBucketName = bucketName;
             }
-            if (string.IsNullOrEmpty(destObjectName))
-            {
-                destObjectName = objectName;
-            }
+            destObjectName = FormatObjectName(destObjectName);
             var partSize = 50 * 1024 * 1024;
             // 创建OssClient实例。
             // 初始化拷贝任务。可以通过InitiateMultipartUploadRequest指定目标文件元信息。
@@ -474,10 +451,7 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            if (string.IsNullOrEmpty(objectName))
-            {
-                throw new ArgumentNullException(nameof(objectName));
-            }
+            objectName = FormatObjectName(objectName);
             var result = _client.DeleteObject(bucketName, objectName);
             if (result != null)
             {
@@ -499,14 +473,19 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(objectNames));
             }
+            List<string> delObjects = new List<string>();
+            foreach (var item in objectNames)
+            {
+                delObjects.Add(FormatObjectName(item));
+            }
             var quietMode = false;
             // DeleteObjectsRequest的第三个参数指定返回模式。
-            var request = new DeleteObjectsRequest(bucketName, objectNames, quietMode);
+            var request = new DeleteObjectsRequest(bucketName, delObjects, quietMode);
             // 删除多个文件。
             var result = _client.DeleteObjects(request);
             if ((!quietMode) && (result.Keys != null))
             {
-                if (result.Keys.Count() == objectNames.Count)
+                if (result.Keys.Count() == delObjects.Count)
                 {
                     return Task.FromResult(true);
                 }
@@ -534,10 +513,7 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            if (string.IsNullOrEmpty(objectName))
-            {
-                throw new ArgumentNullException(nameof(objectName));
-            }
+            objectName = FormatObjectName(objectName);
             GetObjectMetadataRequest request = new GetObjectMetadataRequest(bucketName, objectName)
             {
                 VersionId = versionID
@@ -570,10 +546,7 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            if (string.IsNullOrEmpty(objectName))
-            {
-                throw new ArgumentNullException(nameof(objectName));
-            }
+            objectName = FormatObjectName(objectName);
             if (!await this.ObjectsExistsAsync(bucketName, objectName))
             {
                 throw new Exception($"Object '{objectName}' not in bucket '{bucketName}'.");
@@ -596,10 +569,7 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            if (string.IsNullOrEmpty(objectName))
-            {
-                throw new ArgumentNullException(nameof(objectName));
-            }
+            objectName = FormatObjectName(objectName);
             if (!await this.ObjectsExistsAsync(bucketName, objectName))
             {
                 throw new Exception($"Object '{objectName}' not in bucket '{bucketName}'.");
@@ -613,6 +583,10 @@ namespace OnceMi.AspNetCore.OSS
                 CannedAccessControlList.PublicReadWrite => AccessMode.PublicReadWrite,
                 _ => AccessMode.Default,
             };
+            if (mode == AccessMode.Default)
+            {
+                return await GetBucketAclAsync(bucketName);
+            }
             return await Task.FromResult(mode);
         }
 
@@ -622,15 +596,12 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            if (string.IsNullOrEmpty(objectName))
-            {
-                throw new ArgumentNullException(nameof(objectName));
-            }
+            objectName = FormatObjectName(objectName);
             if (!await SetObjectAclAsync(bucketName, objectName, AccessMode.Default))
             {
                 throw new Exception("Save new policy info failed when remove object acl.");
             }
-            return AccessMode.Default;
+            return await GetObjectAclAsync(bucketName, objectName);
         }
         #endregion
 
@@ -642,10 +613,7 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            if (string.IsNullOrEmpty(objectName))
-            {
-                throw new ArgumentNullException(nameof(objectName));
-            }
+            objectName = FormatObjectName(objectName);
             if (expiresInt <= 0)
             {
                 throw new Exception("ExpiresIn time can not less than 0.");
@@ -656,7 +624,7 @@ namespace OnceMi.AspNetCore.OSS
             }
             long nowTime = (DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000;
             const int minExpiresInt = 600;
-            string key = Encrypt.MD5($"{bucketName}_{objectName}_{type.ToString().ToUpper()}");
+            string key = BuildPresignedObjectCacheKey(bucketName, objectName, type);
             string objectUrl = null;
             //查找缓存
             if (Options.IsEnableCache && (expiresInt > minExpiresInt))
@@ -681,7 +649,7 @@ namespace OnceMi.AspNetCore.OSS
                 if (accessMode == AccessMode.PublicRead || accessMode == AccessMode.PublicReadWrite)
                 {
                     string bucketUrl = await this.GetBucketEndpointAsync(bucketName);
-                    objectUrl = $"{bucketUrl}{(objectName.StartsWith("/") ? "" : "/")}{objectName}";
+                    return $"{bucketUrl}{(objectName.StartsWith("/") ? "" : "/")}{objectName}";
                 }
                 else
                 {

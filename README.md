@@ -6,15 +6,17 @@ Minio: [点此查看](https://docs.min.io/docs/dotnet-client-api-reference.html 
 Aliyun: [点此查看](https://help.aliyun.com/document_detail/32085.html "点此查看")  
 QCloud: [点此查看](https://cloud.tencent.com/document/product/436/32819 "点此查看")  
 
+## Issue
+1. Minio通过Nginx发反向代理后直接通过域名（不加端口）调用存在问题，应该是Minio本身问题，有兴趣的可以自行测试研究，具体信息我已经发布在Issue中。
+2. 腾讯云`PutObjectAsync`流式上传接口，有非常低的概率会抛“储存桶不存在的异常”，应该是腾讯云自身的原因，具体原因未知。
 
 ## How to use  
 1、Install OnceMi.AspNetCore.OSS。  
-CLI中安装：  
+Cmd install：  
 ```shell
 dotnet add package OnceMi.AspNetCore.OSS
 ```
-Nuget中安装：  
-Search and install `OnceMi.AspNetCore.OSS` in Nuget manage。  
+Nuget： [![](https://img.shields.io/nuget/v/OnceMi.AspNetCore.OSS.svg)](https://www.nuget.org/packages/OnceMi.AspNetCore.OSS)
 
 2、Configuration  
 You need to configure OSSService in your Startup.cs：
@@ -219,7 +221,7 @@ catch (Exception ex)
 
 ##### PutObjectAsync  
 
-上传文件。支持流式上传和上传本地文件。  
+上传文件。支持流式上传和上传本地文件。腾讯云不止流式上传，为了兼容接口，采用先将流加载到内存中再上传。  
 
 Method 1(流式上传):
 
@@ -325,9 +327,16 @@ Task<ItemMeta> GetObjectMetadataAsync(string bucketName
 4. Tencent.QCloud.Cos.Sdk
 
 ## To do list  
-1. 修改签名URL过期策略为滑动过期策略(最近比较忙，一个月之内)  
+1. 修改签名URL过期策略为滑动过期策略  
+2. 文件分页加载
   
 ## Update Logs
+#### 1.0.7  
+（本次更新不涉及API更新，可直接更新Nuget包）  
+1、重新编写Demo，覆盖完整的Api
+2、修复URL缓存中的一个bug（区分服务）
+3、优化代码
+
 #### 1.0.6  
 （本次更新不涉及API更新，可直接更新Nuget包）  
 1. 修复在使用Minio时，反向代理后BucketExistsAsync报错：MinIO API responded with message=Access denied on the resource: ******/  

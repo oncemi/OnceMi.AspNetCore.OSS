@@ -1,0 +1,537 @@
+{
+	"info": {
+		"_postman_id": "397acd88-dc4e-4601-96fe-bab9f4b7cb3f",
+		"name": "OnceMi.AspNetCore.OSS",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Bucket",
+			"item": [
+				{
+					"name": "BucketExists",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/BucketExists",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"BucketExists"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateBucket",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/CreateBucket",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"CreateBucket"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "RemoveBucket",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/RemoveBucket",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"RemoveBucket"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ListBuckets",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/ListBuckets",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"ListBuckets"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Object",
+			"item": [
+				{
+					"name": "PutObject",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/PutObject",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"PutObject"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PutObjectUseStream",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/PutObjectUseStream",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"PutObjectUseStream"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetObject",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/GetObject",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"GetObject"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ListObjects",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/ListObjects",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"ListObjects"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "RemoveObject",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/RemoveObject",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"RemoveObject"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "RemoveObjects",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/RemoveObjects",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"RemoveObjects"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CopyObject",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/CopyObject",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"CopyObject"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ObjectsExists",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/ObjectsExists",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"ObjectsExists"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetObjectMetadata",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/GetObjectMetadata",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"GetObjectMetadata"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "ACL",
+			"item": [
+				{
+					"name": "BucketAcl",
+					"item": [
+						{
+							"name": "GetBucketAcl",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{api_url}}/GetBucketAcl",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"GetBucketAcl"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "SetBucketAclPrivate",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{api_url}}/SetBucketAclPrivate",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"SetBucketAclPrivate"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "SetBucketAclPublicRead",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{api_url}}/SetBucketAclPublicRead",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"SetBucketAclPublicRead"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "SetBucketAclPublicReadWrite",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{api_url}}/SetBucketAclPublicReadWrite",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"SetBucketAclPublicReadWrite"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "ObjectAcl",
+					"item": [
+						{
+							"name": "GetObjectAcl",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{api_url}}/GetObjectAcl",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"GetObjectAcl"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "SetObjectAclPrivate",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{api_url}}/SetObjectAclPrivate",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"SetObjectAclPrivate"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "SetObjectAclPublicRead",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{api_url}}/SetObjectAclPublicRead",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"SetObjectAclPublicRead"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "SetObjectAclPublicReadWrite",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{api_url}}/SetObjectAclPublicReadWrite",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"SetObjectAclPublicReadWrite"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "RemoveObjectAcl",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{api_url}}/RemoveObjectAcl",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"RemoveObjectAcl"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Presigned",
+			"item": [
+				{
+					"name": "PresignedGetObject",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/PresignedGetObject",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"PresignedGetObject"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PresignedPutObject",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/PresignedPutObject",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"PresignedPutObject"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "RemovePresignedUrlCache",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/RemovePresignedUrlCache",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"RemovePresignedUrlCache"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Minio",
+			"item": [
+				{
+					"name": "GetPolicy",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/GetPolicy",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"GetPolicy"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SetPolicy",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/SetPolicy",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"SetPolicy"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "RemovePolicy",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/RemovePolicy",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"RemovePolicy"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PolicyExists",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/PolicyExists",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"PolicyExists"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
