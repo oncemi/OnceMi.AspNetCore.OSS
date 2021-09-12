@@ -303,21 +303,25 @@ Task<ItemMeta> GetObjectMetadataAsync(string bucketName
 
 生成一个给HTTP PUT请求用的presigned URL。浏览器/移动端的客户端可以用这个URL进行上传，即使其所在的存储桶是私有的。这个presigned URL可以设置一个失效时间，且不能超过7天。  
 如果Option参数中设置为IsEnableCache为True，将会在有效时间中缓存生成的签名链接，同时也推荐开启此功能，将大大降低请求的频率。  
+注意：七牛云对象储存不支持此操作！  
 
 ##### SetObjectAclAsync  
 `Task<bool> SetObjectAclAsync(string bucketName, string objectName, AccessMode mode);`
 
 设置对象的访问权限，默认文件的访问权限是继承储存桶的。但是可以单独通过此API为对象设置访问权限。  
+注意：七牛云对象储存不支持此操作！  
 
 ##### GetObjectAclAsync  
 `Task<AccessMode> GetObjectAclAsync(string bucketName, string objectName);`
 
 获取对象的储存桶权限，如果是该权限继承自储存桶，获取的可能是储存桶对当前对象的访问权限。  
+注意：七牛云对象储存不支持此操作！  
 
 ##### RemoveObjectAclAsync  
 `Task<AccessMode> RemoveObjectAclAsync(string bucketName, string objectName);`
 
 清除该对象的访问权限或将其恢复至继承权限。  
+注意：七牛云对象储存不支持此操作！   
 
 ## Dependencies
 
@@ -329,28 +333,3 @@ Task<ItemMeta> GetObjectMetadataAsync(string bucketName
 ## To do list  
 1. 修改签名URL过期策略为滑动过期策略  
 2. 文件分页加载
-  
-## Update Logs
-#### 1.0.8  
-（本次更新不涉及API更新，可直接更新Nuget包）  
-1、优化Minio ObjectsExistsAsync
-
-#### 1.0.7  
-（本次更新不涉及API更新，可直接更新Nuget包）  
-1、重新编写Demo，覆盖完整的Api  
-2、修复URL缓存中的一个bug（区分服务）  
-3、优化代码  
-
-#### 1.0.6  
-（本次更新不涉及API更新，可直接更新Nuget包）  
-1. 修复在使用Minio时，反向代理后BucketExistsAsync报错：MinIO API responded with message=Access denied on the resource: ******/  
-  
-#### 1.0.5  
-（本次更新不涉及API更新，可直接更新Nuget包）  
-1. Minio和腾讯云上传文件时，从filename获取contenttype（[@YaChengMu](https://github.com/YaChengMu "YaChengMu")）  
- 
-#### 1.0.4  
-（本次更新不涉及API更新，可直接更新Nuget包） 
-1. 更新Minio依赖，同时更新Minio调用方式  
-2. 更新腾讯云Nuget包  
-3. 移除EasyCaching，使用Microsoft.Extensions.Caching.Memory  
