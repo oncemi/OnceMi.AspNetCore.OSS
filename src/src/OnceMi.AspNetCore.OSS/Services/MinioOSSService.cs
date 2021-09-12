@@ -17,8 +17,6 @@ namespace OnceMi.AspNetCore.OSS
     {
         private readonly IMemoryCache _cache;
         private readonly MinioClient _client = null;
-        public OSSOptions Options { get; private set; }
-
         private readonly string _defaultPolicyVersion = "2012-10-17";
 
         public MinioClient Context
@@ -31,11 +29,10 @@ namespace OnceMi.AspNetCore.OSS
 
         public MinioOSSService(MinioClient client
             , IMemoryCache cache
-            , OSSOptions options)
+            , OSSOptions options) : base(cache, options)
         {
             this._client = client ?? throw new ArgumentNullException(nameof(MinioClient));
             this._cache = cache ?? throw new ArgumentNullException(nameof(IMemoryCache));
-            this.Options = options ?? throw new ArgumentNullException(nameof(OSSOptions));
         }
 
         #region Minio自有方法
@@ -65,7 +62,7 @@ namespace OnceMi.AspNetCore.OSS
         /// </summary>
         /// <param name="bucketName">存储桶名称。</param>
         /// <returns></returns>
-        public async Task<List<ItemUploadInfo>> ListIncompleteUploads(string bucketName)
+        public Task<List<ItemUploadInfo>> ListIncompleteUploads(string bucketName)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
@@ -101,7 +98,7 @@ namespace OnceMi.AspNetCore.OSS
             {
                 Thread.Sleep(0);
             }
-            return result;
+            return Task.FromResult(result);
         }
 
         /// <summary>
@@ -125,7 +122,7 @@ namespace OnceMi.AspNetCore.OSS
                 {
                     throw new Exception("Result policy json is null.");
                 }
-                return DeserializeJsonToObject<PolicyInfo>(policyJson);
+                return JsonUtil.DeserializeObject<PolicyInfo>(policyJson);
             }
             catch (MinioException ex)
             {
@@ -252,7 +249,7 @@ namespace OnceMi.AspNetCore.OSS
             info.Version = _defaultPolicyVersion;
             info.Statement = tempStatements;
 
-            string policyJson = SerializeObject(info);
+            string policyJson = JsonUtil.SerializeObject(info);
             await _client.SetPolicyAsync(new SetPolicyArgs()
                 .WithBucket(bucketName)
                 .WithPolicy(policyJson));
@@ -920,34 +917,46 @@ namespace OnceMi.AspNetCore.OSS
         /// <returns></returns>
         public Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt)
         {
-            return PresignedObjectAsync(bucketName, objectName, expiresInt, PresignedObjectType.Get);
+            return PresignedObjectAsync(bucketName
+                , objectName
+                , expiresInt
+                , PresignedObjectType.Get
+                , async (bucketName, objectName, expiresInt) =>
+                {
+                    objectName = FormatObjectName(objectName);
+                    //生成URL
+                    AccessMode accessMode = await this.GetObjectAclAsync(bucketName, objectName);
+                    if (accessMode == AccessMode.PublicRead || accessMode == AccessMode.PublicReadWrite)
+                    {
+                        return $"{(Options.IsEnableHttps ? "https" : "http")}://{Options.Endpoint}/{bucketName}{(objectName.StartsWith("/") ? objectName : $"/{objectName}")}";
+                    }
+                    else
+                    {
+                        PresignedGetObjectArgs args = new PresignedGetObjectArgs()
+                            .WithBucket(bucketName)
+                            .WithObject(objectName)
+                            .WithExpiry(expiresInt);
+                        return await _client.PresignedGetObjectAsync(args);
+                    }
+                });
         }
 
         public Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)
         {
-            return PresignedObjectAsync(bucketName, objectName, expiresInt, PresignedObjectType.Put);
-        }
-
-        /// <summary>
-        /// 清除临时连接缓存
-        /// </summary>
-        /// <param name="bucketName"></param>
-        /// <param name="objectName"></param>
-        public Task RemovePresignedUrlCache(string bucketName, string objectName)
-        {
-            if (string.IsNullOrEmpty(bucketName))
-            {
-                throw new ArgumentNullException(nameof(bucketName));
-            }
-            objectName = FormatObjectName(objectName);
-            if (Options.IsEnableCache)
-            {
-                string key = BuildPresignedObjectCacheKey(bucketName, objectName, PresignedObjectType.Get);
-                _cache.Remove(key);
-                key = BuildPresignedObjectCacheKey(bucketName, objectName, PresignedObjectType.Put);
-                _cache.Remove(key);
-            }
-            return Task.CompletedTask;
+            return PresignedObjectAsync(bucketName
+                , objectName
+                , expiresInt
+                , PresignedObjectType.Put
+                , async (bucketName, objectName, expiresInt) =>
+                {
+                    objectName = FormatObjectName(objectName);
+                    //生成URL
+                    PresignedPutObjectArgs args = new PresignedPutObjectArgs()
+                            .WithBucket(bucketName)
+                            .WithObject(objectName)
+                            .WithExpiry(expiresInt);
+                    return await _client.PresignedPutObjectAsync(args);
+                });
         }
 
         /// <summary>
@@ -1244,152 +1253,7 @@ namespace OnceMi.AspNetCore.OSS
             return await GetObjectAclAsync(bucketName, objectName);
         }
 
-        #endregion
-
-        #region Private
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bucketName"></param>
-        /// <param name="objectName"></param>
-        /// <param name="expiresInt"></param>
-        /// <param name="type">0为get，1为put</param>
-        /// <returns></returns>
-        private async Task<string> PresignedObjectAsync(string bucketName, string objectName, int expiresInt, PresignedObjectType type)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(bucketName))
-                {
-                    throw new ArgumentNullException(nameof(bucketName));
-                }
-                objectName = FormatObjectName(objectName);
-                if (expiresInt <= 0)
-                {
-                    throw new Exception("ExpiresIn time can not less than 0.");
-                }
-                if (expiresInt > 7 * 24 * 3600)
-                {
-                    throw new Exception("ExpiresIn time no more than 7 days.");
-                }
-                const int minExpiresInt = 600;
-
-                if (Options.IsEnableCache && expiresInt > minExpiresInt)
-                {
-                    string key = BuildPresignedObjectCacheKey(bucketName, objectName, type);
-                    var cacheResult = _cache.Get<PresignedUrlCache>(key);
-                    PresignedUrlCache cache = cacheResult != null ? cacheResult : null;
-                    //Unix时间
-                    long nowTime = (DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000;
-                    //缓存中存在，且有效时间不低于10分钟
-                    if (cache != null
-                        && cache.Type == type
-                        && cache.CreateTime > 0
-                        && (cache.CreateTime + expiresInt - nowTime) > minExpiresInt
-                        && cache.Name == objectName
-                        && cache.BucketName == bucketName)
-                    {
-                        return cache.Url;
-                    }
-                    else
-                    {
-                        if (type == PresignedObjectType.Get && !await this.ObjectsExistsAsync(bucketName, objectName))
-                        {
-                            throw new Exception($"Object '{objectName}' not in bucket '{bucketName}'.");
-                        }
-                        AccessMode accessMode = await this.GetObjectAclAsync(bucketName, objectName);
-                        if (type == PresignedObjectType.Get 
-                            && (accessMode == AccessMode.PublicRead || accessMode == AccessMode.PublicReadWrite))
-                        {
-                            return $"{(Options.IsEnableHttps ? "https" : "http")}://{Options.Endpoint}/{bucketName}{(objectName.StartsWith("/") ? objectName : $"/{objectName}")}";
-                        }
-                        else
-                        {
-                            string presignedUrl = await PresignedGetOrPutObject(bucketName, objectName, expiresInt, type);
-                            if (string.IsNullOrEmpty(presignedUrl))
-                            {
-                                throw new Exception("Result url is null.");
-                            }
-                            PresignedUrlCache urlCache = new PresignedUrlCache()
-                            {
-                                Url = presignedUrl,
-                                CreateTime = nowTime,
-                                Name = objectName,
-                                BucketName = bucketName,
-                                Type = type
-                            };
-                            int randomSec = new Random().Next(5, 30);
-                            _cache.Set(key, urlCache, TimeSpan.FromSeconds(expiresInt + randomSec));
-                            return urlCache.Url;
-                        }
-                    }
-                }
-                else
-                {
-                    if (type == 0 && !await this.ObjectsExistsAsync(bucketName, objectName))
-                    {
-                        throw new Exception($"Object '{objectName}' not in bucket '{bucketName}'.");
-                    }
-                    string presignedUrl = await PresignedGetOrPutObject(bucketName, objectName, expiresInt, type);
-                    return presignedUrl;
-                }
-
-                async Task<string> PresignedGetOrPutObject(string bucketName, string objectName, int expiresInt, PresignedObjectType type)
-                {
-                    string presignedUrl;
-                    if (type == PresignedObjectType.Get)
-                    {
-                        PresignedGetObjectArgs args = new PresignedGetObjectArgs()
-                            .WithBucket(bucketName)
-                            .WithObject(objectName)
-                            .WithExpiry(expiresInt);
-                        presignedUrl = await _client.PresignedGetObjectAsync(args);
-                    }
-                    else
-                    {
-                        PresignedPutObjectArgs args = new PresignedPutObjectArgs()
-                            .WithBucket(bucketName)
-                            .WithObject(objectName)
-                            .WithExpiry(expiresInt);
-                        presignedUrl = await _client.PresignedPutObjectAsync(args);
-                    }
-                    return presignedUrl;
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Presigned {(type == PresignedObjectType.Get ? "get" : "put")} url for object '{objectName}' from {bucketName} failed. {ex.Message}", ex);
-            }
-        }
-
         #region private
-
-        /// <summary>
-        /// 将对象序列化为JSON格式
-        /// </summary>
-        /// <param name="o">对象</param>
-        /// <returns>json字符串</returns>
-        private string SerializeObject(object o)
-        {
-            string json = JsonConvert.SerializeObject(o);
-            return json;
-        }
-
-        /// <summary>
-        /// 解析JSON字符串生成对象实体
-        /// </summary>
-        /// <typeparam name="T">对象类型</typeparam>
-        /// <param name="json">json字符串(eg.{"ID":"112","Name":"石子儿"})</param>
-        /// <returns>对象实体</returns>
-        private T DeserializeJsonToObject<T>(string json) where T : class
-        {
-            JsonSerializer serializer = new JsonSerializer();
-            StringReader sr = new StringReader(json);
-            object o = serializer.Deserialize(new JsonTextReader(sr), typeof(T));
-            T t = o as T;
-            return t;
-        }
 
         private List<StatementItem> UnpackResource(List<StatementItem> source)
         {
@@ -1443,7 +1307,6 @@ namespace OnceMi.AspNetCore.OSS
         }
 
         #endregion
-
 
         #endregion
     }

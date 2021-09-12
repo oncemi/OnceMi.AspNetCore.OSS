@@ -5,9 +5,30 @@ namespace OnceMi.AspNetCore.OSS
 {
     public enum OSSProvider
     {
-        Minio,
-        Aliyun,
-        QCloud
+        /// <summary>
+        /// 无效
+        /// </summary>
+        Invalid = 0,
+
+        /// <summary>
+        /// Minio自建对象储存
+        /// </summary>
+        Minio = 1,
+
+        /// <summary>
+        /// 阿里云OSS
+        /// </summary>
+        Aliyun = 2,
+
+        /// <summary>
+        /// 腾讯云OSS
+        /// </summary>
+        QCloud = 3,
+
+        /// <summary>
+        /// 七牛云 OSS
+        /// </summary>
+        Qiniu = 4,
     }
 
     public class OSSOptions

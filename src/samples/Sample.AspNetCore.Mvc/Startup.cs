@@ -29,25 +29,38 @@ namespace Sample.AspNetCore.Mvc
             services.AddOSSService(option =>
             {
                 option.Provider = OSSProvider.Minio;
-                option.Endpoint = "192.168.100.252:9000";
-                option.AccessKey = "r***********t";
-                option.SecretKey = "u*****************x";
-                option.IsEnableHttps = false;
+                option.Endpoint = "oss.oncemi.com:9000";
+                option.AccessKey = "r***************t";
+                option.SecretKey = "u*************************A";
+                option.IsEnableHttps = true;
                 option.IsEnableCache = true;
             });
             //aliyun oss
             //添加名称为‘aliyunoss’的OSS对象储存配置信息
             services.AddOSSService("aliyunoss", option =>
             {
-                 option.Provider = OSSProvider.Aliyun;
-                 option.Endpoint = "oss-cn-hangzhou.aliyuncs.com";
-                 option.AccessKey = "L*********************U";
-                 option.SecretKey = "D**************************M";
-                 option.IsEnableCache = true;
+                option.Provider = OSSProvider.Aliyun;
+                option.Endpoint = "oss-cn-hangzhou.aliyuncs.com";
+                option.AccessKey = "L*********************U";
+                option.SecretKey = "D**************************M";
+                option.IsEnableHttps = true;
+                option.IsEnableCache = true;
             });
             //qcloud oss
             //从配置文件中加载节点为‘OSSProvider’的配置信息
             services.AddOSSService("QCloud", "OSSProvider");
+
+            //qiniu oss
+            //添加名称为‘qiuniu’的OSS对象储存配置信息
+            services.AddOSSService("qiuniu", option =>
+            {
+                option.Provider = OSSProvider.Qiniu;
+                option.Region = "CN_East";  //支持的值：CN_East(华东)/CN_South(华南)/CN_North(华北)/US_North(北美)/Asia_South(东南亚)
+                option.AccessKey = "B****************************L";
+                option.SecretKey = "Z*************************************g";
+                option.IsEnableHttps = true;
+                option.IsEnableCache = true;
+            });
 
             services.AddControllersWithViews();
         }

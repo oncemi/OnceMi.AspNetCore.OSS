@@ -15,12 +15,12 @@ namespace Sample.AspNetCore.Mvc.Controllers
     {
         private readonly ILogger _logger;
         public IOSSService _ossService;
-        public const string _bucketName = @"oss-test-0807";
+        public const string _bucketName = @"test-0911-east";
 
-        public const string _objectFilePath = @"/test/001.jpg";
-        public const string _copyObjectDestFilePath = @"/test/001_copy.jpg";
-        public const string _uploadFilePath = @"D:\Users\Desktop\OSSTest\001.jpg";
-        public const string _downloadFilePath = @"D:\Users\Desktop\OSSTest\001_download.jpg";
+        public const string _objectFilePath = @"/1.jpeg";
+        public const string _copyObjectDestFilePath = @"/1_copy.jpeg";
+        public const string _uploadFilePath = @"D:\OSSTest\001.jpg";
+        public const string _downloadFilePath = @"D:\OSSTest\001_download.jpg";
 
         public BaseOSSController(ILogger logger)
         {
@@ -146,6 +146,7 @@ namespace Sample.AspNetCore.Mvc.Controllers
                     {
                         stream.CopyTo(fs);
                         fs.Close();
+                        stream.Dispose();
                     }
                 });
                 if (System.IO.File.Exists(_downloadFilePath))

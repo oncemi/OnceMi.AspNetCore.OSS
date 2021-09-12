@@ -23,16 +23,24 @@ namespace OnceMi.AspNetCore.OSS
         /// </summary>
         public Owner Owner { get; internal set; }
 
+        private DateTime _creationDate = DateTime.MinValue;
+
         /// <summary>
         /// Bucket creation time getter/setter
         /// </summary>
-        public string CreationDate { get; internal set; }
-
-        public DateTime CreationDateDateTime
+        public string CreationDate
         {
             get
             {
-                return DateTime.Parse(this.CreationDate, CultureInfo.InvariantCulture);
+                return _creationDate.ToString("yyyy-MM-dd HH:mm:ss");
+            }
+            internal set
+            {
+                if (DateTime.TryParse(value, out DateTime dt))
+                {
+                    _creationDate = dt;
+                }
+                _creationDate = DateTime.MinValue;
             }
         }
     }

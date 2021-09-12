@@ -26,17 +26,17 @@ namespace OnceMi.AspNetCore.OSS
         Task<bool> CreateBucketAsync(string bucketName);
 
         /// <summary>
-        /// 列出所有的存储桶。
-        /// </summary>
-        /// <returns></returns>
-        Task<List<Bucket>> ListBucketsAsync();
-
-        /// <summary>
         /// 删除一个存储桶
         /// </summary>
         /// <param name="bucketName">存储桶名称。</param>
         /// <returns></returns>
         Task<bool> RemoveBucketAsync(string bucketName);
+
+        /// <summary>
+        /// 列出所有的存储桶。
+        /// </summary>
+        /// <returns></returns>
+        Task<List<Bucket>> ListBucketsAsync();
 
         /// <summary>
         /// 设置储存桶的访问权限
