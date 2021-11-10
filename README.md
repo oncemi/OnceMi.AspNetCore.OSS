@@ -1,10 +1,11 @@
 # OnceMi.AspNetCore.OSS
-Asp.Net Core 5.0对象储存扩展包，支持Minio自建对象储存、阿里云OSS、腾讯云COS。支持OSS常规操作，比如储存桶创建，删除、对象上传、下载、生成签名URL等。目前仅支持.NET 5，也推荐升级至.NET 5.
+Asp.Net Core 5.0对象储存扩展包，支持Minio自建对象储存、阿里云OSS、腾讯云COS、华为云OBS。支持OSS常规操作，比如储存桶创建，删除、对象上传、下载、生成签名URL等。目前仅支持.NET 5，也推荐升级至.NET 5.
 
 ## OSS Documents  
 Minio: [点此查看](https://docs.min.io/docs/dotnet-client-api-reference.html "点此查看")  
 Aliyun: [点此查看](https://help.aliyun.com/document_detail/32085.html "点此查看")  
 QCloud: [点此查看](https://cloud.tencent.com/document/product/436/32819 "点此查看")  
+HaweiCloud:[点此查看](https://support.huaweicloud.com/sdk-dotnet-devg-obs/obs_25_0001.html "点此查看")
 
 ## Issue
 1. Minio通过Nginx发反向代理后直接通过域名（不加端口）调用存在问题，应该是Minio本身问题，有兴趣的可以自行测试研究，具体信息我已经发布在Issue中。
