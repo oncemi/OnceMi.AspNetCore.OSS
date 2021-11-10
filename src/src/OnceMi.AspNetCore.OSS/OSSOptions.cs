@@ -7,7 +7,8 @@ namespace OnceMi.AspNetCore.OSS
     {
         Minio,
         Aliyun,
-        QCloud
+        QCloud,
+        HaweiCloud
     }
 
     public class OSSOptions

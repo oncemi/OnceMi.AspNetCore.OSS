@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <PackageReference Include="Aliyun.OSS.SDK.NetCore" Version="2.13.0" />
+    <PackageReference Include="HuaweiCloud.OBS.SDK" Version="3.20.7" />
     <PackageReference Include="Tencent.QCloud.Cos.Sdk" Version="5.4.21" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="5.0.0" />
