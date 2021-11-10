@@ -14,7 +14,6 @@ namespace OnceMi.AspNetCore.OSS
     {
         private readonly IMemoryCache _cache;
         private readonly OssClient _client = null;
-        public OSSOptions Options { get; private set; }
 
         public OssClient Context
         {
@@ -25,12 +24,11 @@ namespace OnceMi.AspNetCore.OSS
         }
 
         public AliyunOSSService(OssClient client
-            , IMemoryCache provider
-            , OSSOptions options)
+            , IMemoryCache cache
+            , OSSOptions options) : base(cache, options)
         {
             this._client = client ?? throw new ArgumentNullException(nameof(OssClient));
-            this._cache = provider ?? throw new ArgumentNullException(nameof(IMemoryCache));
-            this.Options = options ?? throw new ArgumentNullException(nameof(OSSOptions));
+            this._cache = cache ?? throw new ArgumentNullException(nameof(IMemoryCache));
         }
 
         #region Bucket
@@ -315,31 +313,59 @@ namespace OnceMi.AspNetCore.OSS
             return Task.FromResult(_client.DoesObjectExist(bucketName, objectName));
         }
 
-        public Task RemovePresignedUrlCache(string bucketName, string objectName)
-        {
-            if (string.IsNullOrEmpty(bucketName))
-            {
-                throw new ArgumentNullException(nameof(bucketName));
-            }
-            objectName = FormatObjectName(objectName);
-            if (Options.IsEnableCache)
-            {
-                string key = BuildPresignedObjectCacheKey(bucketName, objectName, PresignedObjectType.Get);
-                _cache.Remove(key);
-                key = BuildPresignedObjectCacheKey(bucketName, objectName, PresignedObjectType.Put);
-                _cache.Remove(key);
-            }
-            return Task.CompletedTask;
-        }
-
         public Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt)
         {
-            return PresignedObjectAsync(bucketName, objectName, expiresInt, PresignedObjectType.Get);
+            return PresignedObjectAsync(bucketName
+                , objectName
+                , expiresInt
+                , PresignedObjectType.Get
+                , async (bucketName, objectName, expiresInt) =>
+                {
+                    objectName = FormatObjectName(objectName);
+                    //生成URL
+                    AccessMode accessMode = await this.GetObjectAclAsync(bucketName, objectName);
+                    if (accessMode == AccessMode.PublicRead || accessMode == AccessMode.PublicReadWrite)
+                    {
+                        string bucketUrl = await this.GetBucketEndpointAsync(bucketName);
+                        string uri = $"{bucketUrl}{(objectName.StartsWith("/") ? "" : "/")}{objectName}";
+                        return uri;
+                    }
+                    else
+                    {
+                        var req = new GeneratePresignedUriRequest(bucketName, objectName, SignHttpMethod.Get)
+                        {
+                            Expiration = DateTime.Now.AddSeconds(expiresInt)
+                        };
+                        var uri = _client.GeneratePresignedUri(req);
+                        if (uri == null)
+                        {
+                            throw new Exception("Generate get presigned uri failed");
+                        }
+                        return uri.ToString();
+                    }
+                });
         }
 
         public Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)
         {
-            return PresignedObjectAsync(bucketName, objectName, expiresInt, PresignedObjectType.Put);
+            return PresignedObjectAsync(bucketName
+                , objectName
+                , expiresInt
+                , PresignedObjectType.Put
+                , (bucketName, objectName, expiresInt) =>
+                {
+                    objectName = FormatObjectName(objectName);
+                    var req = new GeneratePresignedUriRequest(bucketName, objectName, SignHttpMethod.Put)
+                    {
+                        Expiration = DateTime.Now.AddSeconds(expiresInt)
+                    };
+                    var uri = _client.GeneratePresignedUri(req);
+                    if (uri != null)
+                    {
+                        throw new Exception("Generate put presigned uri failed");
+                    }
+                    return Task.FromResult(uri.ToString());
+                });
         }
 
         public Task<bool> PutObjectAsync(string bucketName, string objectName, Stream data, CancellationToken cancellationToken = default)
@@ -603,100 +629,6 @@ namespace OnceMi.AspNetCore.OSS
             }
             return await GetObjectAclAsync(bucketName, objectName);
         }
-        #endregion
-
-        #region private
-
-        private async Task<string> PresignedObjectAsync(string bucketName, string objectName, int expiresInt, PresignedObjectType type)
-        {
-            if (string.IsNullOrEmpty(bucketName))
-            {
-                throw new ArgumentNullException(nameof(bucketName));
-            }
-            objectName = FormatObjectName(objectName);
-            if (expiresInt <= 0)
-            {
-                throw new Exception("ExpiresIn time can not less than 0.");
-            }
-            if (expiresInt > 7 * 24 * 3600)
-            {
-                throw new Exception("ExpiresIn time no more than 7 days.");
-            }
-            long nowTime = (DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000;
-            const int minExpiresInt = 600;
-            string key = BuildPresignedObjectCacheKey(bucketName, objectName, type);
-            string objectUrl = null;
-            //查找缓存
-            if (Options.IsEnableCache && (expiresInt > minExpiresInt))
-            {
-                var cacheResult = _cache.Get<PresignedUrlCache>(key);
-                PresignedUrlCache cache = cacheResult != null ? cacheResult : null;
-                //缓存中存在，且有效时间不低于10分钟
-                if (cache != null
-                    && cache.Type == type
-                    && cache.CreateTime > 0
-                    && (cache.CreateTime + expiresInt - nowTime) > minExpiresInt
-                    && cache.Name == objectName
-                    && cache.BucketName == bucketName)
-                {
-                    return cache.Url;
-                }
-            }
-            if (type == PresignedObjectType.Get)
-            {
-                //生成URL
-                AccessMode accessMode = await this.GetObjectAclAsync(bucketName, objectName);
-                if (accessMode == AccessMode.PublicRead || accessMode == AccessMode.PublicReadWrite)
-                {
-                    string bucketUrl = await this.GetBucketEndpointAsync(bucketName);
-                    return $"{bucketUrl}{(objectName.StartsWith("/") ? "" : "/")}{objectName}";
-                }
-                else
-                {
-                    var req = new GeneratePresignedUriRequest(bucketName, objectName, SignHttpMethod.Get)
-                    {
-                        Expiration = DateTime.Now.AddSeconds(expiresInt)
-                    };
-                    var uri = _client.GeneratePresignedUri(req);
-                    if (uri != null)
-                    {
-                        objectUrl = uri.ToString();
-                    }
-                }
-            }
-            else
-            {
-                var req = new GeneratePresignedUriRequest(bucketName, objectName, SignHttpMethod.Put)
-                {
-                    Expiration = DateTime.Now.AddSeconds(expiresInt)
-                };
-                var uri = _client.GeneratePresignedUri(req);
-                if (uri != null)
-                {
-                    objectUrl = uri.ToString();
-                }
-            }
-            if (string.IsNullOrEmpty(objectUrl))
-            {
-                throw new Exception("Presigned get object url failed.");
-            }
-            //save cache
-            if (Options.IsEnableCache && expiresInt > minExpiresInt)
-            {
-                PresignedUrlCache urlCache = new PresignedUrlCache()
-                {
-                    Url = objectUrl,
-                    CreateTime = nowTime,
-                    Name = objectName,
-                    BucketName = bucketName,
-                    Type = type
-                };
-                int randomSec = new Random().Next(5, 30);
-                _cache.Set(key, urlCache, TimeSpan.FromSeconds(expiresInt + randomSec));
-            }
-            return objectUrl;
-        }
-
         #endregion
     }
 }

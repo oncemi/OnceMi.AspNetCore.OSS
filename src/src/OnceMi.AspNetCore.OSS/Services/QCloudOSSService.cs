@@ -10,7 +10,6 @@ using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,8 +19,6 @@ namespace OnceMi.AspNetCore.OSS
     {
         private readonly IMemoryCache _cache;
         private readonly CosXml _client = null;
-        public OSSOptions Options { get; private set; }
-
         public CosXml Context
         {
             get
@@ -32,11 +29,10 @@ namespace OnceMi.AspNetCore.OSS
 
         public QCloudOSSService(CosXml client
             , IMemoryCache cache
-            , OSSOptions options)
+            , OSSOptions options) : base(cache, options)
         {
             this._client = client ?? throw new ArgumentNullException(nameof(CosXml));
             this._cache = cache ?? throw new ArgumentNullException(nameof(IMemoryCache));
-            this.Options = options ?? throw new ArgumentNullException(nameof(OSSOptions));
         }
 
         #region bucekt
@@ -549,31 +545,80 @@ namespace OnceMi.AspNetCore.OSS
             return Task.FromResult(result.IsSuccessful());
         }
 
-        public Task RemovePresignedUrlCache(string bucketName, string objectName)
-        {
-            if (string.IsNullOrEmpty(bucketName))
-            {
-                throw new ArgumentNullException(nameof(bucketName));
-            }
-            objectName = FormatObjectName(objectName);
-            if (Options.IsEnableCache)
-            {
-                string key = BuildPresignedObjectCacheKey(bucketName, objectName, PresignedObjectType.Get);
-                _cache.Remove(key);
-                key = BuildPresignedObjectCacheKey(bucketName, objectName, PresignedObjectType.Put);
-                _cache.Remove(key);
-            }
-            return Task.CompletedTask;
-        }
-
         public Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt)
         {
-            return PresignedObjectAsync(bucketName, objectName, expiresInt, PresignedObjectType.Get);
+            return PresignedObjectAsync(bucketName
+                , objectName
+                , expiresInt
+                , PresignedObjectType.Get
+                , async (bucketName, objectName, expiresInt) =>
+                {
+                    objectName = FormatObjectName(objectName);
+                    string newBucketName = ConvertBucketName(bucketName);
+                    PreSignatureStruct preSignatureStruct = new PreSignatureStruct()
+                    {
+                        appid = Options.Endpoint,
+                        region = Options.Region,
+                        bucket = newBucketName,
+                        key = objectName,
+                        httpMethod = "GET",
+                        isHttps = Options.IsEnableHttps,
+                        signDurationSecond = expiresInt,
+                        headers = null,
+                        queryParameters = null,
+                    };
+                    string objectUrl = null;
+                    //生成URL
+                    AccessMode accessMode = await this.GetObjectAclAsync(bucketName, objectName);
+                    if (accessMode == AccessMode.PublicRead || accessMode == AccessMode.PublicReadWrite)
+                    {
+                        objectUrl = $"{(Options.IsEnableHttps ? "https" : "http")}://{newBucketName}.cos.{Options.Region}.myqcloud.com{(objectName.StartsWith("/") ? "" : "/")}{objectName}";
+                    }
+                    else
+                    {
+                        string uri = _client.GenerateSignURL(preSignatureStruct);
+                        if (uri != null)
+                        {
+                            objectUrl = uri.ToString();
+                        }
+                    }
+                    if (string.IsNullOrEmpty(objectUrl))
+                    {
+                        throw new Exception("Generate get presigned uri failed");
+                    }
+                    return objectUrl;
+                });
         }
 
         public Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)
         {
-            return PresignedObjectAsync(bucketName, objectName, expiresInt, PresignedObjectType.Put);
+            return PresignedObjectAsync(bucketName
+                , objectName
+                , expiresInt
+                , PresignedObjectType.Put
+                , (bucketName, objectName, expiresInt) =>
+                {
+                    objectName = FormatObjectName(objectName);
+                    string newBucketName = ConvertBucketName(bucketName);
+                    PreSignatureStruct preSignatureStruct = new PreSignatureStruct()
+                    {
+                        appid = Options.Endpoint,
+                        region = Options.Region,
+                        bucket = newBucketName,
+                        key = objectName,
+                        httpMethod = "PUT",
+                        isHttps = Options.IsEnableHttps,
+                        signDurationSecond = expiresInt,
+                        headers = null,
+                        queryParameters = null,
+                    };
+                    string uri = _client.GenerateSignURL(preSignatureStruct);
+                    if (uri == null)
+                    {
+                        throw new Exception("Generate get presigned uri failed");
+                    }
+                    return Task.FromResult(uri.ToString());
+                });
         }
 
         public Task<bool> SetObjectAclAsync(string bucketName, string objectName, AccessMode mode)
@@ -714,101 +759,6 @@ namespace OnceMi.AspNetCore.OSS
         #endregion
 
         #region private
-
-        private async Task<string> PresignedObjectAsync(string bucketName, string objectName, int expiresInt, PresignedObjectType type)
-        {
-            if (string.IsNullOrEmpty(bucketName))
-            {
-                throw new ArgumentNullException(nameof(bucketName));
-            }
-            objectName = FormatObjectName(objectName);
-            if (expiresInt <= 0)
-            {
-                throw new Exception("ExpiresIn time can not less than 0.");
-            }
-            if (expiresInt > 7 * 24 * 3600)
-            {
-                throw new Exception("ExpiresIn time no more than 7 days.");
-            }
-            long nowTime = (DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000;
-            const int minExpiresInt = 600;
-            string key = BuildPresignedObjectCacheKey(bucketName, objectName, type);
-            string objectUrl = null;
-            string newBucketName = ConvertBucketName(bucketName);
-            PreSignatureStruct preSignatureStruct = new PreSignatureStruct()
-            {
-                appid = Options.Endpoint,
-                region = Options.Region,
-                bucket = newBucketName,
-                key = objectName,
-                httpMethod = type.ToString().ToUpper(),
-                isHttps = Options.IsEnableHttps,
-                signDurationSecond = expiresInt,
-                headers = null,
-                queryParameters = null,
-            };
-
-            //查找缓存
-            if (Options.IsEnableCache && (expiresInt > minExpiresInt))
-            {
-                var cacheResult = _cache.Get<PresignedUrlCache>(key);
-                PresignedUrlCache cache = cacheResult != null ? cacheResult : null;
-                //缓存中存在，且有效时间不低于10分钟
-                if (cache != null
-                    && cache.Type == type
-                    && cache.CreateTime > 0
-                    && (cache.CreateTime + expiresInt - nowTime) > minExpiresInt
-                    && cache.Name == objectName
-                    && cache.BucketName == bucketName)
-                {
-                    return cache.Url;
-                }
-            }
-            if (type == PresignedObjectType.Get)
-            {
-                //生成URL
-                AccessMode accessMode = await this.GetObjectAclAsync(bucketName, objectName);
-                if (accessMode == AccessMode.PublicRead || accessMode == AccessMode.PublicReadWrite)
-                {
-                    objectUrl = $"{(Options.IsEnableHttps ? "https" : "http")}://{newBucketName}.cos.{Options.Region}.myqcloud.com{(objectName.StartsWith("/") ? "" : "/")}{objectName}";
-                }
-                else
-                {
-                    string uri = _client.GenerateSignURL(preSignatureStruct);
-                    if (uri != null)
-                    {
-                        objectUrl = uri.ToString();
-                    }
-                }
-            }
-            else
-            {
-                string uri = _client.GenerateSignURL(preSignatureStruct);
-                if (uri != null)
-                {
-                    objectUrl = uri.ToString();
-                }
-            }
-            if (string.IsNullOrEmpty(objectUrl))
-            {
-                throw new Exception("Presigned get object url failed.");
-            }
-            //save cache
-            if (Options.IsEnableCache && expiresInt > minExpiresInt)
-            {
-                PresignedUrlCache urlCache = new PresignedUrlCache()
-                {
-                    Url = objectUrl,
-                    CreateTime = nowTime,
-                    Name = objectName,
-                    BucketName = bucketName,
-                    Type = type
-                };
-                int randomSec = new Random().Next(5, 30);
-                _cache.Set(key, urlCache, TimeSpan.FromSeconds(expiresInt + randomSec));
-            }
-            return objectUrl;
-        }
 
         private string ConvertBucketName(string input)
         {

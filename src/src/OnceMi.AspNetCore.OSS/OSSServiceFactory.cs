@@ -36,9 +36,11 @@ namespace OnceMi.AspNetCore.OSS
                 name = DefaultOptionName.Name;
             }
             var options = optionsMonitor.Get(name);
-            if (options == null)
+            if (options == null || (options.Provider == 0 && string.IsNullOrEmpty(options.Endpoint) && string.IsNullOrEmpty(options.SecretKey) && string.IsNullOrEmpty(options.AccessKey)))
                 throw new ArgumentException($"Cannot get option by name '{name}'.");
-            if (string.IsNullOrEmpty(options.Endpoint))
+            if(options.Provider == OSSProvider.Invalid)
+                throw new ArgumentNullException(nameof(options.Provider));
+            if (string.IsNullOrEmpty(options.Endpoint) && options.Provider != OSSProvider.Qiniu)
                 throw new ArgumentNullException(nameof(options.Endpoint));
             if (string.IsNullOrEmpty(options.SecretKey))
                 throw new ArgumentNullException(nameof(options.SecretKey));
@@ -69,8 +71,8 @@ namespace OnceMi.AspNetCore.OSS
                 case OSSProvider.QCloud:
                     {
                         CosXmlConfig config = new CosXmlConfig.Builder()
-                          .IsHttps(options.IsEnableHttps) 
-                          .SetRegion(options.Region) 
+                          .IsHttps(options.IsEnableHttps)
+                          .SetRegion(options.Region)
                           .SetDebugLog(false)
                           .Build();
                         QCloudCredentialProvider cosCredentialProvider = new DefaultQCloudCredentialProvider(options.AccessKey, options.SecretKey, 600);
@@ -80,6 +82,10 @@ namespace OnceMi.AspNetCore.OSS
                 case OSSProvider.HaweiCloud:
                     {
                         return new HaweiOSSService(options);
+                    }
+                case OSSProvider.Qiniu:
+                    {
+                        return new QiniuOSSService(_cache, options);
                     }
                 default:
                     throw new Exception("Unknow provider type");
