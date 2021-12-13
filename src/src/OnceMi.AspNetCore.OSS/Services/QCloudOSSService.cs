@@ -298,7 +298,7 @@ namespace OnceMi.AspNetCore.OSS
                         LastModified = item.lastModified,
                         ETag = item.eTag,
                         Size = (ulong)item.size,
-                        IsDir = false,
+                        IsDir = !string.IsNullOrWhiteSpace(item.key) && item.key[^1] == '/',
                         BucketName = bucketName,
                         VersionId = null,
                     });
@@ -374,11 +374,11 @@ namespace OnceMi.AspNetCore.OSS
                     throw new Exception("Input stream is null");
                 }
                 long length = stream.Length - stream.Position;
-                if(length == 0)
+                if (length == 0)
                 {
                     throw new Exception("Stream position at end of stream, this stream have no data to read.");
                 }
-                if(length > int.MaxValue)
+                if (length > int.MaxValue)
                 {
                     throw new Exception("The input stream is too long.");
                 }

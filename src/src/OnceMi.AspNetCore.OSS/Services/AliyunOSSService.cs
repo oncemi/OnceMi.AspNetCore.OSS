@@ -294,7 +294,7 @@ namespace OnceMi.AspNetCore.OSS
                         ETag = item.ETag,
                         Size = (ulong)item.Size,
                         BucketName = bucketName,
-                        IsDir = false,
+                        IsDir = !string.IsNullOrWhiteSpace(item.Key) && item.Key[^1] == '/',
                         LastModifiedDateTime = item.LastModified
                     });
                 }

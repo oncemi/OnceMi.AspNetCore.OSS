@@ -273,7 +273,8 @@ namespace OnceMi.AspNetCore.OSS
                         ETag = item.Hash,
                         Size = (ulong)item.Fsize,
                         LastModified = item.EndUser,
-                        LastModifiedDateTime = TimeUtil.UnixTimeStampToDateTime(item.PutTime)
+                        LastModifiedDateTime = TimeUtil.UnixTimeStampToDateTime(item.PutTime),
+                        IsDir = !string.IsNullOrWhiteSpace(item.Key) && item.Key[^1] == '/',
                     });
                 }
                 marker = listRet.Result.Marker;
@@ -553,7 +554,7 @@ namespace OnceMi.AspNetCore.OSS
             }
             MemoryStream ms = new MemoryStream(hr.Data);
             callback(ms);
-            }
+        }
 
         public Task GetObjectAsync(string bucketName, string objectName, string fileName, CancellationToken cancellationToken = default)
         {
@@ -652,7 +653,7 @@ namespace OnceMi.AspNetCore.OSS
             foreach (var item in _regionZoneMap)
             {
                 if (item.Key.Equals(zone, StringComparison.OrdinalIgnoreCase))
-                {   
+                {
                     return item.Value;
                 }
             }

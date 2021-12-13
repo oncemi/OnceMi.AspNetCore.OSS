@@ -15,7 +15,7 @@ namespace Sample.AspNetCore.Mvc.Controllers
     {
         private readonly ILogger _logger;
         public IOSSService _ossService;
-        public const string _bucketName = @"test-0911-east";
+        public const string _bucketName = @"qtest-1213";
 
         public const string _objectFilePath = @"/1.jpeg";
         public const string _copyObjectDestFilePath = @"/1_copy.jpeg";
