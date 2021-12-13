@@ -7,7 +7,7 @@ Aliyun: [点此查看](https://help.aliyun.com/document_detail/32085.html "点�
 QCloud: [点此查看](https://cloud.tencent.com/document/product/436/32819 "点此查看")  
 
 ## Issue
-1. Minio通过Nginx发反向代理后直接通过域名（不加端口）调用存在问题，应该是Minio本身问题，有兴趣的可以自行测试研究，具体信息我已经发布在Issue中。
+1. Minio通过Nginx发反向代理后直接通过域名（默认443端口）调用存在问题，应该是Minio本身问题，有兴趣的可以自行测试研究，具体信息我已经发布在Issue中。
 2. 腾讯云`PutObjectAsync`流式上传接口，有非常低的概率会抛“储存桶不存在的异常”，应该是腾讯云自身的原因，具体原因未知。
 
 ## How to use  
