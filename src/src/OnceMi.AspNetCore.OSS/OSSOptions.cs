@@ -29,6 +29,11 @@ namespace OnceMi.AspNetCore.OSS
         /// ÆßÅ£ÔÆ OSS
         /// </summary>
         Qiniu = 4,
+
+        /// <summary>
+        /// »ªÎªÔÆ OBS
+        /// </summary>
+        HuaweiCloud = 5
     }
 
     public class OSSOptions

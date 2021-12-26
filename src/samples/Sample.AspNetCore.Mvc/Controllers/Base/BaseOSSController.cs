@@ -36,7 +36,8 @@ namespace Sample.AspNetCore.Mvc.Controllers
                 bool result = await _ossService.BucketExistsAsync(_bucketName);
                 return Json(new ResultObject()
                 {
-                    Status = result
+                    Status = result,
+                    Message = result ? $"{_bucketName}已存在" : $"{_bucketName}不存在"
                 });
             }
             catch (Exception ex)

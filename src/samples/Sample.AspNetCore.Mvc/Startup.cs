@@ -35,6 +35,7 @@ namespace Sample.AspNetCore.Mvc
                 option.IsEnableHttps = true;
                 option.IsEnableCache = true;
             });
+
             //aliyun oss
             //添加名称为‘aliyunoss’的OSS对象储存配置信息
             services.AddOSSService("aliyunoss", option =>
@@ -46,6 +47,7 @@ namespace Sample.AspNetCore.Mvc
                 option.IsEnableHttps = true;
                 option.IsEnableCache = true;
             });
+
             //qcloud oss
             //从配置文件中加载节点为‘OSSProvider’的配置信息
             services.AddOSSService("QCloud", "OSSProvider");
@@ -58,6 +60,20 @@ namespace Sample.AspNetCore.Mvc
                 option.Region = "CN_East";  //支持的值：CN_East(华东)/CN_South(华南)/CN_North(华北)/US_North(北美)/Asia_South(东南亚)
                 option.AccessKey = "B****************************L";
                 option.SecretKey = "Z*************************************g";
+                option.IsEnableHttps = true;
+                option.IsEnableCache = true;
+            });
+
+            //华为云OBS
+            //添加名称为‘huaweiobs’的OSS对象储存配置信息
+            //Endpoint查询：https://developer.huaweicloud.com/endpoint?OBS
+            services.AddOSSService("huaweiobs", option =>
+            {
+                option.Provider = OSSProvider.HuaweiCloud;
+                option.Endpoint = "obs.cn-southwest-2.myhuaweicloud.com"; //不需要带有协议
+                option.Region = "cn-southwest-2";
+                option.AccessKey = "RAXRWFH1GCN3DBCTFSK6";
+                option.SecretKey = "5kfHQlNyXgSjroaLja8oZ5PNWzf0xNxMQwk3Sw0c";
                 option.IsEnableHttps = true;
                 option.IsEnableCache = true;
             });

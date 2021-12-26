@@ -4,15 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace OnceMi.AspNetCore.OSS
 {
-    public class AliyunOSSService : IBaseOSSService, IAliyunOSSService
+    public class AliyunOSSService : BaseOSSService, IAliyunOSSService
     {
-        private readonly IMemoryCache _cache;
         private readonly OssClient _client = null;
 
         public OssClient Context
@@ -23,12 +21,12 @@ namespace OnceMi.AspNetCore.OSS
             }
         }
 
-        public AliyunOSSService(OssClient client
-            , IMemoryCache cache
+        public AliyunOSSService(IMemoryCache cache
             , OSSOptions options) : base(cache, options)
         {
-            this._client = client ?? throw new ArgumentNullException(nameof(OssClient));
-            this._cache = cache ?? throw new ArgumentNullException(nameof(IMemoryCache));
+            if (options == null)
+                throw new ArgumentNullException(nameof(options), "The OSSOptions can not null");
+            this._client = new OssClient(options.Endpoint, options.AccessKey, options.SecretKey); ;
         }
 
         #region Bucket

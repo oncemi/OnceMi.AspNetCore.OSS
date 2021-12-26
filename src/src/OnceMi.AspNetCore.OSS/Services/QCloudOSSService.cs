@@ -1,4 +1,5 @@
 ﻿using COSXML;
+using COSXML.Auth;
 using COSXML.Common;
 using COSXML.CosException;
 using COSXML.Model.Bucket;
@@ -15,9 +16,8 @@ using System.Threading.Tasks;
 
 namespace OnceMi.AspNetCore.OSS
 {
-    public class QCloudOSSService : IBaseOSSService, IQCloudOSSService
+    public class QCloudOSSService : BaseOSSService, IQCloudOSSService
     {
-        private readonly IMemoryCache _cache;
         private readonly CosXml _client = null;
         public CosXml Context
         {
@@ -27,12 +27,16 @@ namespace OnceMi.AspNetCore.OSS
             }
         }
 
-        public QCloudOSSService(CosXml client
-            , IMemoryCache cache
-            , OSSOptions options) : base(cache, options)
+        public QCloudOSSService(IMemoryCache cache, OSSOptions options) : base(cache, options)
         {
-            this._client = client ?? throw new ArgumentNullException(nameof(CosXml));
-            this._cache = cache ?? throw new ArgumentNullException(nameof(IMemoryCache));
+            CosXmlConfig config = new CosXmlConfig.Builder()
+                          .IsHttps(options.IsEnableHttps)
+                          .SetRegion(options.Region)
+                          .SetDebugLog(false)
+                          .Build();
+            QCloudCredentialProvider cosCredentialProvider = new DefaultQCloudCredentialProvider(options.AccessKey, options.SecretKey, 600);
+
+            this._client = new CosXmlServer(config, cosCredentialProvider);
         }
 
         #region bucekt

@@ -1,20 +1,15 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace OnceMi.AspNetCore.OSS
 {
-    public abstract class IBaseOSSService
+    public abstract class BaseOSSService
     {
-        private readonly IMemoryCache _cache;
+        protected readonly IMemoryCache _cache;
         public OSSOptions Options { get; private set; }
 
-        public IBaseOSSService(IMemoryCache cache, OSSOptions options)
+        public BaseOSSService(IMemoryCache cache, OSSOptions options)
         {
             this._cache = cache ?? throw new ArgumentNullException(nameof(IMemoryCache));
             this.Options = options ?? throw new ArgumentNullException(nameof(OSSOptions));

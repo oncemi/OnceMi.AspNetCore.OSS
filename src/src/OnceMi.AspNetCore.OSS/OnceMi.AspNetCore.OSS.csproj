@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <Description>ASP.NET Core对象储存扩展。支持Minio自建对象储存、阿里云OSS、腾讯云COS、七牛云</Description>
+    <Description>ASP.NET Core对象储存扩展。支持Minio自建对象储存、阿里云OSS、腾讯云COS、七牛云Kodo、华为云OBS</Description>
     <Company>OnceMi</Company>
     <Authors>OnceMi</Authors>
     <AssemblyVersion>1.1.0.0</AssemblyVersion>

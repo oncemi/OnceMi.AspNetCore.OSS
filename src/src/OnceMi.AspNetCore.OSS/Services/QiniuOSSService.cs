@@ -13,9 +13,8 @@ using System.Threading.Tasks;
 
 namespace OnceMi.AspNetCore.OSS
 {
-    public class QiniuOSSService : IBaseOSSService, IQiniuOSSService
+    public class QiniuOSSService : BaseOSSService, IQiniuOSSService
     {
-        private readonly IMemoryCache _cache;
         private readonly Mac _mac;
         private readonly Config _config;
         private readonly Auth _auth;
@@ -38,11 +37,8 @@ namespace OnceMi.AspNetCore.OSS
             {"Asia_South", "as0"},
         };
 
-        public QiniuOSSService(IMemoryCache cache
-            , OSSOptions options) : base(cache, options)
+        public QiniuOSSService(IMemoryCache cache, OSSOptions options) : base(cache, options)
         {
-            this._cache = cache ?? throw new ArgumentNullException(nameof(IMemoryCache));
-
             _mac = new Mac(this.Options.AccessKey, this.Options.SecretKey);
             _config = new Config();
             _auth = new Auth(_mac);

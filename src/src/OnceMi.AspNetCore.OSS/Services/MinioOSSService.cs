@@ -3,7 +3,6 @@ using Microsoft.Extensions.Caching.Memory;
 using Minio;
 using Minio.DataModel;
 using Minio.Exceptions;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,9 +12,8 @@ using System.Threading.Tasks;
 
 namespace OnceMi.AspNetCore.OSS
 {
-    public class MinioOSSService : IBaseOSSService, IMinioOSSService
+    public class MinioOSSService : BaseOSSService, IMinioOSSService
     {
-        private readonly IMemoryCache _cache;
         private readonly MinioClient _client = null;
         private readonly string _defaultPolicyVersion = "2012-10-17";
 
@@ -27,12 +25,18 @@ namespace OnceMi.AspNetCore.OSS
             }
         }
 
-        public MinioOSSService(MinioClient client
-            , IMemoryCache cache
-            , OSSOptions options) : base(cache, options)
+        public MinioOSSService(IMemoryCache cache, OSSOptions options) : base(cache, options)
         {
-            this._client = client ?? throw new ArgumentNullException(nameof(MinioClient));
-            this._cache = cache ?? throw new ArgumentNullException(nameof(IMemoryCache));
+            MinioClient client = new MinioClient()
+                               .WithEndpoint(options.Endpoint)
+                               .WithRegion(options.Region)
+                               .WithSessionToken(options.SessionToken)
+                               .WithCredentials(options.AccessKey, options.SecretKey);
+            if (options.IsEnableHttps)
+            {
+                client = client.WithSSL();
+            }
+            this._client = client.Build();
         }
 
         #region Minio自有方法

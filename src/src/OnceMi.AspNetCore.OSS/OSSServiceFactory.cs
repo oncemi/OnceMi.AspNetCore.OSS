@@ -31,58 +31,50 @@ namespace OnceMi.AspNetCore.OSS
 
         public IOSSService Create(string name)
         {
+            #region 参数验证
+
             if (string.IsNullOrEmpty(name))
             {
                 name = DefaultOptionName.Name;
             }
             var options = optionsMonitor.Get(name);
-            if (options == null || (options.Provider == 0 && string.IsNullOrEmpty(options.Endpoint) && string.IsNullOrEmpty(options.SecretKey) && string.IsNullOrEmpty(options.AccessKey)))
+            if (options == null ||
+                (options.Provider == OSSProvider.Invalid
+                && string.IsNullOrEmpty(options.Endpoint)
+                && string.IsNullOrEmpty(options.SecretKey)
+                && string.IsNullOrEmpty(options.AccessKey)))
                 throw new ArgumentException($"Cannot get option by name '{name}'.");
-            if(options.Provider == OSSProvider.Invalid)
+            if (options.Provider == OSSProvider.Invalid)
                 throw new ArgumentNullException(nameof(options.Provider));
             if (string.IsNullOrEmpty(options.Endpoint) && options.Provider != OSSProvider.Qiniu)
-                throw new ArgumentNullException(nameof(options.Endpoint));
+                throw new ArgumentNullException(nameof(options.Endpoint), "When your provider is Minio/QCloud/Aliyun/HuaweiCloud, endpoint can not null.");
             if (string.IsNullOrEmpty(options.SecretKey))
-                throw new ArgumentNullException(nameof(options.SecretKey));
+                throw new ArgumentNullException(nameof(options.SecretKey), "SecretKey can not null.");
             if (string.IsNullOrEmpty(options.AccessKey))
-                throw new ArgumentNullException(nameof(options.AccessKey));
+                throw new ArgumentNullException(nameof(options.AccessKey), "AccessKey can not null.");
+            if ((options.Provider == OSSProvider.Minio
+                || options.Provider == OSSProvider.QCloud
+                || options.Provider == OSSProvider.Qiniu
+                || options.Provider == OSSProvider.HuaweiCloud)
+                && string.IsNullOrEmpty(options.Region))
+            {
+                throw new ArgumentNullException(nameof(options.Region), "When your provider is Minio/QCloud/Qiniu/HuaweiCloud, region can not null.");
+            }
+
+            #endregion
 
             switch (options.Provider)
             {
                 case OSSProvider.Aliyun:
-                    {
-                        OssClient client = new OssClient(options.Endpoint, options.AccessKey, options.SecretKey);
-                        return new AliyunOSSService(client, _cache, options);
-                    }
+                    return new AliyunOSSService(_cache, options);
                 case OSSProvider.Minio:
-                    {
-                        MinioClient client = new MinioClient()
-                                .WithEndpoint(options.Endpoint)
-                                .WithRegion(options.Region)
-                                .WithSessionToken(options.SessionToken)
-                                .WithCredentials(options.AccessKey, options.SecretKey);
-
-                        if (options.IsEnableHttps)
-                        {
-                            client = client.WithSSL();
-                        }
-                        return new MinioOSSService(client.Build(), _cache, options);
-                    }
+                    return new MinioOSSService(_cache, options);
                 case OSSProvider.QCloud:
-                    {
-                        CosXmlConfig config = new CosXmlConfig.Builder()
-                          .IsHttps(options.IsEnableHttps)
-                          .SetRegion(options.Region)
-                          .SetDebugLog(false)
-                          .Build();
-                        QCloudCredentialProvider cosCredentialProvider = new DefaultQCloudCredentialProvider(options.AccessKey, options.SecretKey, 600);
-                        CosXml cosXml = new CosXmlServer(config, cosCredentialProvider);
-                        return new QCloudOSSService(cosXml, _cache, options);
-                    }
+                    return new QCloudOSSService(_cache, options);
                 case OSSProvider.Qiniu:
-                    {
-                        return new QiniuOSSService(_cache, options);
-                    }
+                    return new QiniuOSSService(_cache, options);
+                case OSSProvider.HuaweiCloud:
+                    return new HaweiOSSService(_cache, options);
                 default:
                     throw new Exception("Unknow provider type");
             }
