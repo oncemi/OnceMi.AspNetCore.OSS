@@ -13,6 +13,12 @@
     <ProjectReference Include="..\..\src\OnceMi.AspNetCore.OSS\OnceMi.AspNetCore.OSS.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="TestFiles\1.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
 
 </Project>

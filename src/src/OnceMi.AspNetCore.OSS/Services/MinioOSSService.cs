@@ -28,10 +28,10 @@ namespace OnceMi.AspNetCore.OSS
         public MinioOSSService(IMemoryCache cache, OSSOptions options) : base(cache, options)
         {
             MinioClient client = new MinioClient()
-                               .WithEndpoint(options.Endpoint)
-                               .WithRegion(options.Region)
-                               .WithSessionToken(options.SessionToken)
-                               .WithCredentials(options.AccessKey, options.SecretKey);
+                .WithEndpoint(options.Endpoint)
+                .WithRegion(options.Region)
+                .WithSessionToken(options.SessionToken)
+                .WithCredentials(options.AccessKey, options.SecretKey);
             if (options.IsEnableHttps)
             {
                 client = client.WithSSL();

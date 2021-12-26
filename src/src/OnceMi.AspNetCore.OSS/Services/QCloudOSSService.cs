@@ -30,12 +30,11 @@ namespace OnceMi.AspNetCore.OSS
         public QCloudOSSService(IMemoryCache cache, OSSOptions options) : base(cache, options)
         {
             CosXmlConfig config = new CosXmlConfig.Builder()
-                          .IsHttps(options.IsEnableHttps)
-                          .SetRegion(options.Region)
-                          .SetDebugLog(false)
-                          .Build();
+                .IsHttps(options.IsEnableHttps)
+                .SetRegion(options.Region)
+                .SetDebugLog(false)
+                .Build();
             QCloudCredentialProvider cosCredentialProvider = new DefaultQCloudCredentialProvider(options.AccessKey, options.SecretKey, 600);
-
             this._client = new CosXmlServer(config, cosCredentialProvider);
         }
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using OBS;
 using OBS.Model;
+using OnceMi.AspNetCore.OSS.Models.Huawei;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -45,21 +46,29 @@ namespace OnceMi.AspNetCore.OSS
 
         #region bucket
 
-        #region 华为云自由方法
+        #region 华为云私有方法
 
         /// <summary>
         /// 获取桶存量信息
         /// </summary>
         /// <param name="bucketName"></param>
         /// <returns></returns>
-        public GetBucketStorageInfoResponse GetBucketStorageInfo(string bucketName)
+        public Task<BucketStorageInfo> GetBucketStorageInfoAsync(string bucketName)
         {
             GetBucketStorageInfoRequest request = new GetBucketStorageInfoRequest
             {
                 BucketName = bucketName,
             };
             GetBucketStorageInfoResponse response = _client.GetBucketStorageInfo(request);
-            return response;
+            if (response == null || response.StatusCode != HttpStatusCode.OK)
+            {
+                throw new Exception($"Get bucket '{bucketName}' storage info failed.");
+            }
+            return Task.FromResult(new BucketStorageInfo()
+            {
+                Size = response.Size,
+                ObjectNumber = response.ObjectNumber,
+            });
         }
 
         /// <summary>
@@ -73,7 +82,7 @@ namespace OnceMi.AspNetCore.OSS
         /// 低频访问存储(StorageClassEnum.Warm) 低频访问存储适用于不频繁访问（平均一年少于12次）但在需要时也要求能够快速访问数据的业务场景。
         /// 归档存储(StorageClassEnum.Cold) 归档存储适用于很少访问（平均一年访问一次）数据的业务场景。
         /// </remarks>
-        public bool SetBucketStoragePolicy(string bucketName, StorageClassEnum type)
+        public Task<bool> SetBucketStoragePolicyAsync(string bucketName, StorageClassEnum type)
         {
             SetBucketStoragePolicyRequest request = new SetBucketStoragePolicyRequest
             {
@@ -81,7 +90,7 @@ namespace OnceMi.AspNetCore.OSS
                 StorageClass = type,
             };
             SetBucketStoragePolicyResponse response = _client.SetBucketStoragePolicy(request);
-            return response != null && response.StatusCode == HttpStatusCode.OK;
+            return Task.FromResult(response != null && response.StatusCode == HttpStatusCode.OK);
         }
 
         /// <summary>
@@ -95,18 +104,18 @@ namespace OnceMi.AspNetCore.OSS
         /// 低频访问存储(StorageClassEnum.Warm) 低频访问存储适用于不频繁访问（平均一年少于12次）但在需要时也要求能够快速访问数据的业务场景。
         /// 归档存储(StorageClassEnum.Cold) 归档存储适用于很少访问（平均一年访问一次）数据的业务场景。
         /// </remarks>
-        public StorageClassEnum GetBucketStoragePolicy(string bucketName)
+        public Task<StorageClassEnum> GetBucketStoragePolicyAsync(string bucketName)
         {
             GetBucketStoragePolicyRequest request = new GetBucketStoragePolicyRequest()
             {
-                BucketName = "bucketName",
+                BucketName = bucketName,
             };
             GetBucketStoragePolicyResponse response = _client.GetBucketStoragePolicy(request);
             if (response.StatusCode != HttpStatusCode.OK || response.StorageClass == null)
             {
                 throw new Exception($"Get bucket '{bucketName}' storage policy failed. response code is {response.StatusCode}, response data: {JsonUtil.SerializeObject(response)}");
             }
-            return response.StorageClass.Value;
+            return Task.FromResult(response.StorageClass.Value);
         }
 
         #endregion
@@ -203,7 +212,7 @@ namespace OnceMi.AspNetCore.OSS
                 throw new Exception($"Get bucket '{bucketName}' ACL failed. response code is {response.StatusCode}, response data: {JsonUtil.SerializeObject(response)}");
             }
             bool hasAllUser = false;
-            PermissionEnum? permission = null;
+            List<PermissionEnum> permissions = new List<PermissionEnum>();
             foreach (var item in response.AccessControlList.Grants)
             {
                 if (item.Grantee is GroupGrantee grantee)
@@ -211,22 +220,24 @@ namespace OnceMi.AspNetCore.OSS
                     if (grantee.GroupGranteeType == GroupGranteeEnum.AllUsers)
                     {
                         hasAllUser = true;
-                        permission = item.Permission;
-                        break;
+                        if (item.Permission != null)
+                        {
+                            permissions.Add(item.Permission.Value);
+                        }
                     }
                 }
             }
-            if (hasAllUser)
+            if (hasAllUser && permissions.Count > 0)
             {
-                switch (permission.Value)
+                if (permissions.Any(p => p == PermissionEnum.FullControl)
+                    || permissions.Any(p => p == PermissionEnum.Write)
+                    || (permissions.Any(p => p == PermissionEnum.Read) && permissions.Any(p => p == PermissionEnum.Write)))
                 {
-                    case PermissionEnum.Read:
-                        return Task.FromResult(AccessMode.PublicRead);
-                    case PermissionEnum.Write:
-                    case PermissionEnum.FullControl:
-                        return Task.FromResult(AccessMode.PublicReadWrite);
-                    default:
-                        return Task.FromResult(AccessMode.Private);
+                    return Task.FromResult(AccessMode.PublicReadWrite);
+                }
+                else if (permissions.Any(p => p == PermissionEnum.Read))
+                {
+                    return Task.FromResult(AccessMode.PublicRead);
                 }
             }
             return Task.FromResult(AccessMode.Private);
@@ -272,16 +283,17 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-
             DeleteBucketRequest request = new DeleteBucketRequest
             {
                 BucketName = bucketName
             };
             DeleteBucketResponse response = _client.DeleteBucket(request);
-            return Task.FromResult(response.StatusCode == HttpStatusCode.OK);
+            return Task.FromResult(response != null && (response.StatusCode == HttpStatusCode.NoContent || response.StatusCode == HttpStatusCode.OK));
         }
 
         #endregion
+
+        #region object
 
         /// <summary>
         /// 获取对象信息
@@ -366,9 +378,8 @@ namespace OnceMi.AspNetCore.OSS
                         ETag = item.ETag,
                         Size = (ulong)item.Size,
                         BucketName = bucketName,
-                        IsDir = false,
+                        IsDir = !string.IsNullOrWhiteSpace(item.ObjectKey) && item.ObjectKey[^1] == '/',
                         LastModifiedDateTime = item.LastModified,
-
                     });
                 }
                 nextMarker = resultObj.NextMarker;
@@ -458,7 +469,6 @@ namespace OnceMi.AspNetCore.OSS
                 ObjectKey = objectName
             };
             bool response = _client.HeadObject(request);
-
             return Task.FromResult(response);
         }
         /// <summary>
@@ -506,19 +516,34 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            objectName = FormatObjectName(objectName);
-
-            CreateTemporarySignatureRequest request = new CreateTemporarySignatureRequest()
-            {
-                BucketName = bucketName,
-                Expires = expiresInt,
-                ObjectKey = objectName,
-                Method = HttpVerb.GET,
-            };
-
-            CreateTemporarySignatureResponse response = _client.CreateTemporarySignature(request);
-
-            return Task.FromResult(response.SignUrl);
+            return PresignedObjectAsync(bucketName
+                , objectName
+                , expiresInt
+                , PresignedObjectType.Get
+                , async (bucketName, objectName, expiresInt) =>
+                {
+                    objectName = FormatObjectName(objectName);
+                    string objectUrl = null;
+                    AccessMode accessMode = await this.GetObjectAclAsync(bucketName, objectName);
+                    if (accessMode == AccessMode.PublicRead || accessMode == AccessMode.PublicReadWrite)
+                    {
+                        objectUrl = $"{(Options.IsEnableHttps ? "https" : "http")}://{bucketName}.{Options.Endpoint}{(objectName.StartsWith("/") ? "" : "/")}{objectName}";
+                        return objectUrl;
+                    }
+                    CreateTemporarySignatureRequest request = new CreateTemporarySignatureRequest()
+                    {
+                        BucketName = bucketName,
+                        Expires = expiresInt,
+                        ObjectKey = objectName,
+                        Method = HttpVerb.GET,
+                    };
+                    CreateTemporarySignatureResponse response = _client.CreateTemporarySignature(request);
+                    if (response == null || string.IsNullOrEmpty(response.SignUrl))
+                    {
+                        return null;
+                    }
+                    return response.SignUrl;
+                });
         }
 
         /// <summary>
@@ -534,19 +559,27 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            objectName = FormatObjectName(objectName);
-
-            CreateTemporarySignatureRequest request = new CreateTemporarySignatureRequest()
-            {
-                BucketName = bucketName,
-                Expires = expiresInt,
-                ObjectKey = objectName,
-                Method = HttpVerb.PUT,
-            };
-
-            CreateTemporarySignatureResponse response = _client.CreateTemporarySignature(request);
-
-            return Task.FromResult(response.SignUrl);
+            return PresignedObjectAsync(bucketName
+                , objectName
+                , expiresInt
+                , PresignedObjectType.Put
+                , (bucketName, objectName, expiresInt) =>
+                {
+                    objectName = FormatObjectName(objectName);
+                    CreateTemporarySignatureRequest request = new CreateTemporarySignatureRequest()
+                    {
+                        BucketName = bucketName,
+                        Expires = expiresInt,
+                        ObjectKey = objectName,
+                        Method = HttpVerb.PUT,
+                    };
+                    CreateTemporarySignatureResponse response = _client.CreateTemporarySignature(request);
+                    if (response == null || string.IsNullOrEmpty(response.SignUrl))
+                    {
+                        return null;
+                    }
+                    return Task.FromResult(response.SignUrl);
+                });
         }
 
         /// <summary>
@@ -571,7 +604,6 @@ namespace OnceMi.AspNetCore.OSS
                 InputStream = data,
             };
             PutObjectResponse response = _client.PutObject(request);
-
             return Task.FromResult(response.StatusCode == HttpStatusCode.OK);
         }
 
@@ -624,7 +656,7 @@ namespace OnceMi.AspNetCore.OSS
                 ObjectKey = objectName
             };
             DeleteObjectResponse response = _client.DeleteObject(request);
-            return Task.FromResult(response.StatusCode == HttpStatusCode.OK);
+            return Task.FromResult(response != null && (response.StatusCode == HttpStatusCode.NoContent || response.StatusCode == HttpStatusCode.OK));
         }
 
         /// <summary>
@@ -635,16 +667,15 @@ namespace OnceMi.AspNetCore.OSS
         /// <returns></returns>
         public Task<bool> RemoveObjectAsync(string bucketName, List<string> objectNames)
         {
-            DeleteObjectsRequest request = new DeleteObjectsRequest();
-            request.BucketName = bucketName;
-            request.Quiet = true;
+            DeleteObjectsRequest request = new DeleteObjectsRequest
+            {
+                BucketName = bucketName,
+                Quiet = false
+            };
             foreach (var item in objectNames)
             {
-                request.AddKey(item);
+                request.AddKey(FormatObjectName(item));
             }
-
-
-
             DeleteObjectsResponse response = _client.DeleteObjects(request);
             if (response.DeletedObjects != null && response.DeletedObjects.Count == objectNames.Count)
             {
@@ -652,29 +683,108 @@ namespace OnceMi.AspNetCore.OSS
             }
             else
             {
-                throw new Exception("Some file delete failed.");
+                if (response.DeletedObjects != null && response.DeletedObjects.Count > 0)
+                {
+                    throw new Exception($"Some file delete failed. files {string.Join(",", response.DeletedObjects.Select(p => p.ObjectKey))}");
+                }
+                else
+                {
+                    throw new Exception($"Some file delete failed.");
+                }
             }
-
-
         }
 
-        public Task RemovePresignedUrlCache(string bucketName, string objectName)
+        public async Task<bool> SetObjectAclAsync(string bucketName, string objectName, AccessMode mode)
         {
-            return Task.CompletedTask;
+            if (string.IsNullOrEmpty(bucketName))
+            {
+                throw new ArgumentNullException(nameof(bucketName));
+            }
+            objectName = FormatObjectName(objectName);
+            if (!await this.ObjectsExistsAsync(bucketName, objectName))
+            {
+                throw new Exception($"Object '{objectName}' not in bucket '{bucketName}'.");
+            }
+            var canned = mode switch
+            {
+                AccessMode.Default => CannedAclEnum.Private,
+                AccessMode.Private => CannedAclEnum.Private,
+                AccessMode.PublicRead => CannedAclEnum.PublicRead,
+                AccessMode.PublicReadWrite => CannedAclEnum.PublicReadWrite,
+                _ => CannedAclEnum.Private,
+            };
+            SetObjectAclRequest request = new SetObjectAclRequest
+            {
+                BucketName = bucketName,
+                ObjectKey = objectName,
+                CannedAcl = canned
+            };
+            SetObjectAclResponse response = _client.SetObjectAcl(request);
+            return response != null && response.StatusCode == HttpStatusCode.OK;
+        }
+        public async Task<AccessMode> RemoveObjectAclAsync(string bucketName, string objectName)
+        {
+            objectName = FormatObjectName(objectName);
+            if (!await SetObjectAclAsync(bucketName, objectName, AccessMode.Default))
+            {
+                throw new Exception("Save new policy info failed when remove object acl.");
+            }
+            return await GetObjectAclAsync(bucketName, objectName);
         }
 
-        public Task<bool> SetObjectAclAsync(string bucketName, string objectName, AccessMode mode)
+        public async Task<AccessMode> GetObjectAclAsync(string bucketName, string objectName)
         {
-            throw new NotImplementedException();
-        }
-        public Task<AccessMode> RemoveObjectAclAsync(string bucketName, string objectName)
-        {
-            throw new NotImplementedException();
+            if (string.IsNullOrEmpty(bucketName))
+            {
+                throw new ArgumentNullException(nameof(bucketName));
+            }
+            objectName = FormatObjectName(objectName);
+            if (!await this.ObjectsExistsAsync(bucketName, objectName))
+            {
+                throw new Exception($"Object '{objectName}' not in bucket '{bucketName}'.");
+            }
+            GetObjectAclRequest request = new GetObjectAclRequest
+            {
+                BucketName = bucketName,
+                ObjectKey = objectName
+            };
+            GetObjectAclResponse response = _client.GetObjectAcl(request);
+            if (response.StatusCode != HttpStatusCode.OK || response.AccessControlList == null)
+            {
+                throw new Exception($"Get object '{objectName}' ACL failed. response code is {response.StatusCode}, response data: {JsonUtil.SerializeObject(response)}");
+            }
+            bool hasAllUser = false;
+            List<PermissionEnum> permissions = new List<PermissionEnum>();
+            foreach (var item in response.AccessControlList.Grants)
+            {
+                if (item.Grantee is GroupGrantee grantee)
+                {
+                    if (grantee.GroupGranteeType == GroupGranteeEnum.AllUsers)
+                    {
+                        hasAllUser = true;
+                        if (item.Permission != null)
+                        {
+                            permissions.Add(item.Permission.Value);
+                        }
+                    }
+                }
+            }
+            if (hasAllUser && permissions.Count > 0)
+            {
+                if (permissions.Any(p => p == PermissionEnum.FullControl)
+                    || permissions.Any(p => p == PermissionEnum.Write)
+                    || (permissions.Any(p => p == PermissionEnum.Read) && permissions.Any(p => p == PermissionEnum.Write)))
+                {
+                    return AccessMode.PublicReadWrite;
+                }
+                else if (permissions.Any(p => p == PermissionEnum.Read))
+                {
+                    return AccessMode.PublicRead;
+                }
+            }
+            return AccessMode.Private;
         }
 
-        public Task<AccessMode> GetObjectAclAsync(string bucketName, string objectName)
-        {
-            throw new NotImplementedException();
-        }
+        #endregion
     }
 }

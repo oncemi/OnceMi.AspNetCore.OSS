@@ -26,7 +26,7 @@ namespace OnceMi.AspNetCore.OSS
         {
             if (options == null)
                 throw new ArgumentNullException(nameof(options), "The OSSOptions can not null");
-            this._client = new OssClient(options.Endpoint, options.AccessKey, options.SecretKey); ;
+            this._client = new OssClient(options.Endpoint, options.AccessKey, options.SecretKey);
         }
 
         #region Bucket

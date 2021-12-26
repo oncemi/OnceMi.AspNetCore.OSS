@@ -75,6 +75,23 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "[Qiniu]获取储存桶域名",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/GetBucketDomainName",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"GetBucketDomainName"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -127,6 +144,23 @@
 							],
 							"path": [
 								"GetObject"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetObjectByStream",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/GetObjectByStream",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"GetObjectByStream"
 							]
 						}
 					},
@@ -461,75 +495,153 @@
 			]
 		},
 		{
-			"name": "Minio",
+			"name": "厂商自有API",
 			"item": [
 				{
-					"name": "GetPolicy",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{api_url}}/GetPolicy",
-							"host": [
-								"{{api_url}}"
-							],
-							"path": [
-								"GetPolicy"
-							]
+					"name": "Minio",
+					"item": [
+						{
+							"name": "GetPolicy",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{api_url}}/GetPolicy",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"GetPolicy"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "SetPolicy",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{api_url}}/SetPolicy",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"SetPolicy"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "RemovePolicy",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{api_url}}/RemovePolicy",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"RemovePolicy"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "PolicyExists",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{api_url}}/PolicyExists",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"PolicyExists"
+									]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
+					]
 				},
 				{
-					"name": "SetPolicy",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{api_url}}/SetPolicy",
-							"host": [
-								"{{api_url}}"
-							],
-							"path": [
-								"SetPolicy"
-							]
+					"name": "Huawei",
+					"item": [
+						{
+							"name": "GetBucketStorageInfo",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{api_url}}/GetBucketStorageInfo",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"GetBucketStorageInfo"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "GetBucketStoragePolicy",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{api_url}}/GetBucketStorageInfo",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"GetBucketStorageInfo"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "SetBucketStoragePolicyCold",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{api_url}}/SetBucketStoragePolicyCold",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"SetBucketStoragePolicyCold"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "SetBucketStoragePolicyStandard",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{api_url}}/SetBucketStoragePolicyStandard",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"SetBucketStoragePolicyStandard"
+									]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
-				},
-				{
-					"name": "RemovePolicy",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{api_url}}/RemovePolicy",
-							"host": [
-								"{{api_url}}"
-							],
-							"path": [
-								"RemovePolicy"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "PolicyExists",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{api_url}}/PolicyExists",
-							"host": [
-								"{{api_url}}"
-							],
-							"path": [
-								"PolicyExists"
-							]
-						}
-					},
-					"response": []
+					]
 				}
 			]
 		}

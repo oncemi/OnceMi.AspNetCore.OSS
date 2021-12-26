@@ -24,6 +24,88 @@ namespace Sample.AspNetCore.Mvc.Controllers
             _ossService = ossServiceFactory.Create("huaweiobs");
         }
 
+        public async Task<IActionResult> GetBucketStorageInfo()
+        {
+            try
+            {
+                var result = await (_ossService as HaweiOSSService).GetBucketStorageInfoAsync(_bucketName);
+                return Json(new ResultObject()
+                {
+                    Status = true,
+                    Data = result,
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new ResultObject()
+                {
+                    Status = false,
+                    Message = ex.Message,
+                });
+            }
+        }
 
+        public async Task<IActionResult> GetBucketStoragePolicy()
+        {
+            try
+            {
+                var result = await (_ossService as HaweiOSSService).GetBucketStoragePolicyAsync(_bucketName);
+                return Json(new ResultObject()
+                {
+                    Status = true,
+                    Data = result.ToString(),
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new ResultObject()
+                {
+                    Status = false,
+                    Message = ex.Message,
+                });
+            }
+        }
+
+        public async Task<IActionResult> SetBucketStoragePolicyStandard()
+        {
+            try
+            {
+                var result = await (_ossService as HaweiOSSService).SetBucketStoragePolicyAsync(_bucketName, OBS.Model.StorageClassEnum.Standard);
+                return Json(new ResultObject()
+                {
+                    Status = true,
+                    Data = result,
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new ResultObject()
+                {
+                    Status = false,
+                    Message = ex.Message,
+                });
+            }
+        }
+
+        public async Task<IActionResult> SetBucketStoragePolicyCold()
+        {
+            try
+            {
+                var result = await (_ossService as HaweiOSSService).SetBucketStoragePolicyAsync(_bucketName, OBS.Model.StorageClassEnum.Cold);
+                return Json(new ResultObject()
+                {
+                    Status = true,
+                    Data = result,
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new ResultObject()
+                {
+                    Status = false,
+                    Message = ex.Message,
+                });
+            }
+        }
     }
 }

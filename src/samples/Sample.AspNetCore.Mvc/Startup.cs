@@ -29,9 +29,9 @@ namespace Sample.AspNetCore.Mvc
             services.AddOSSService(option =>
             {
                 option.Provider = OSSProvider.Minio;
-                option.Endpoint = "oss.oncemi.com:9000";
-                option.AccessKey = "r***************t";
-                option.SecretKey = "u*************************A";
+                option.Endpoint = "oss.oncemi.com:9000";  //不需要带有协议
+                option.AccessKey = "root";
+                option.SecretKey = "X9V#NeT%dC4*CUpkotTdZ^Tkg7";
                 option.IsEnableHttps = true;
                 option.IsEnableCache = true;
             });

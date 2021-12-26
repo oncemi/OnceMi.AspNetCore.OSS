@@ -17,10 +17,10 @@ namespace Sample.AspNetCore.Mvc.Controllers
         public IOSSService _ossService;
         public const string _bucketName = @"qtest-1213";
 
-        public const string _objectFilePath = @"/1.jpeg";
-        public const string _copyObjectDestFilePath = @"/1_copy.jpeg";
-        public const string _uploadFilePath = @"D:\OSSTest\001.jpg";
-        public const string _downloadFilePath = @"D:\OSSTest\001_download.jpg";
+        public const string _objectFilePath = @"TestFiles/1.jpg";
+        public const string _copyObjectDestFilePath = @"/1_copy.jpg";
+        public const string _uploadFilePath = @"TestFiles/1.jpg";
+        public const string _downloadFilePath = @"TestFiles/1_download.jpg";
 
         public BaseOSSController(ILogger logger)
         {
@@ -141,6 +141,48 @@ namespace Sample.AspNetCore.Mvc.Controllers
         {
             try
             {
+                if (System.IO.File.Exists(_downloadFilePath))
+                {
+                    System.IO.File.Delete(_downloadFilePath);
+                }
+
+                await _ossService.GetObjectAsync(_bucketName, _objectFilePath, _downloadFilePath);
+                if (System.IO.File.Exists(_downloadFilePath))
+                {
+                    return Json(new ResultObject()
+                    {
+                        Status = true,
+                        Message = $"文件【{_objectFilePath}】下载成功，路径：{_downloadFilePath}"
+                    });
+                }
+                else
+                {
+                    return Json(new ResultObject()
+                    {
+                        Status = false,
+                        Message = $"文件【{_objectFilePath}】下载失败"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new ResultObject()
+                {
+                    Status = false,
+                    Message = ex.Message
+                });
+            }
+        }
+
+        public async Task<IActionResult> GetObjectByStream()
+        {
+            try
+            {
+                if (System.IO.File.Exists(_downloadFilePath))
+                {
+                    System.IO.File.Delete(_downloadFilePath);
+                }
+
                 await _ossService.GetObjectAsync(_bucketName, _objectFilePath, (stream) =>
                 {
                     using (FileStream fs = new FileStream(_downloadFilePath, FileMode.Create, FileAccess.Write))
