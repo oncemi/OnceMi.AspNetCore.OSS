@@ -1,22 +1,27 @@
+
 # OnceMi.AspNetCore.OSS
-Asp.Net Core 5.0/6.0对象储存扩展包，支持Minio自建对象储存、阿里云OSS、腾讯云COS。支持OSS常规操作，比如储存桶创建，删除、对象上传、下载、生成签名URL等。目前仅支持.NET 5/6，也推荐升级至.NET 5/6.
+Asp.Net Core对象储存扩展包，支持Minio自建对象储存、阿里云OSS、腾讯云COS、七牛云Kodo、华为云OBS。支持OSS常规操作，比如储存桶创建，删除、对象上传、下载、生成签名URL等。目前支持.NET Core3.1/.NET 5/.NET 6，推荐升级至.NET 6.
 
-## OSS Documents  
-Minio: [点此查看](https://docs.min.io/docs/dotnet-client-api-reference.html "点此查看")  
-Aliyun: [点此查看](https://help.aliyun.com/document_detail/32085.html "点此查看")  
-QCloud: [点此查看](https://cloud.tencent.com/document/product/436/32819 "点此查看")  
+## 各厂家相关SDK文档  
+- Minio: [点此查看](https://docs.min.io/docs/dotnet-client-api-reference.html "点此查看")  
+- Aliyun: [点此查看](https://help.aliyun.com/document_detail/32085.html "点此查看")  
+- QCloud: [点此查看](https://cloud.tencent.com/document/product/436/32819 "点此查看")  
+- 七牛云: [点此查看](https://developer.qiniu.com/kodo/1237/csharp "点此查看")  
+- HuaweiOBS：[点此查看](https://support.huaweicloud.com/sdk-dotnet-devg-obs/obs_25_0001.html "点此查看")  
 
+## 已知问题  
+1. Minio通过Nginx发反向代理后直接通过域名（不加端口）调用存在问题，应该是Minio本身问题，有兴趣的可以自行测试研究，具体信息我已经发布在Issue中。
+2. 腾讯云`PutObjectAsync`流式上传接口，有非常低的概率会抛“储存桶不存在的异常”，应该是腾讯云自身的原因，具体原因未知。
 
-## How to use  
-1、Install OnceMi.AspNetCore.OSS。  
-CLI中安装：  
+## 如何使用  
+1、安装`OnceMi.AspNetCore.OSS`依赖。  
+Cmd install：  
 ```shell
 dotnet add package OnceMi.AspNetCore.OSS
 ```
-Nuget中安装：  
-Search and install `OnceMi.AspNetCore.OSS` in Nuget manage。  
+Nuget： [![](https://img.shields.io/nuget/v/OnceMi.AspNetCore.OSS.svg)](https://www.nuget.org/packages/OnceMi.AspNetCore.OSS)
 
-2、Configuration  
+2、在`Startup.cs`中配置  
 You need to configure OSSService in your Startup.cs：
 
 ```csharp
@@ -44,13 +49,13 @@ services.AddOSSService("aliyunoss", option =>
  });
 
 //qcloud oss
-//从配置文件中加载节点为‘OSSProvider’的配置信息
+//也可以从配置文件中加载节点为‘OSSProvider’的配置信息
 services.AddOSSService("QCloud", "OSSProvider");
 ```
 
 可注入多个OSSService，不同的Service用名称来区分。需要注意的是，腾讯云COS中配置节点Endpoint表示AppId。  
 
-配置文件实例： 
+appsettings.json配置文件实例： 
 ```csharp
 {
   "OSSProvider": {
@@ -65,7 +70,8 @@ services.AddOSSService("QCloud", "OSSProvider");
 
 ```
 
-3、Use  
+3、使用Demo
+
 ```csharp
 /// <summary>
 /// 使用默认的配置文件
@@ -103,7 +109,8 @@ public class QCloudController : Controller
     }
 }
 ```
-列出bucket中的全部文件
+列出bucket中的全部文件  
+
 ```csharp
 public async Task<IActionResult> ListBuckets()
 {
@@ -119,7 +126,7 @@ public async Task<IActionResult> ListBuckets()
 }
 ```
 
-### Option Params
+### 配置参数  
 
 |  名称 |  类型  | 说明  | 案例  |  备注 |
 | :------------ |:------------ | :------------ | :------------ | :------------ |
@@ -135,6 +142,10 @@ public async Task<IActionResult> ListBuckets()
 ## Dependencies
 
 1. Aliyun.OSS.SDK.NetCore
-2. MemoryCache
+2. Microsoft.Extensions.Caching.Memory
 3. Newtonsoft.Json
-4. Tencent.QCloud.Cos.Sdk  
+4. Tencent.QCloud.Cos.Sdk
+
+## To do list  
+1. 修改签名URL过期策略为滑动过期策略  
+2. 文件分页加载
