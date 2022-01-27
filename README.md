@@ -130,7 +130,7 @@ public async Task<IActionResult> ListBuckets()
 
 |  名称 |  类型  | 说明  | 案例  |  备注 |
 | :------------ |:------------ | :------------ | :------------ | :------------ |
-| Provider  | 枚举  | OSS提供者  |  Minio | 允许值：Minio,Aliyun, QCloud |
+| Provider  | 枚举  | OSS提供者  |  Minio | 允许值：Minio/Aliyun/QCloud/Qiniu/HuaweiCloud |
 | Endpoint  | string  | 节点  | oss-cn-hangzhou.aliyuncs.com  |  在腾讯云OSS中表示AppId  |
 | AccessKey  | string  | AccessKey  | F...............s  |    |
 | SecretKey  | string  | SecretKey  | v...............d  |    |

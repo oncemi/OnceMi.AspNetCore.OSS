@@ -30,8 +30,8 @@ namespace Sample.AspNetCore.Mvc
             {
                 option.Provider = OSSProvider.Minio;
                 option.Endpoint = "oss.oncemi.com:9000";  //不需要带有协议
-                option.AccessKey = "root";
-                option.SecretKey = "X9V#NeT%dC4*CUpkotTdZ^Tkg7";
+                option.AccessKey = "r****************t";
+                option.SecretKey = "Q***************************z";
                 option.IsEnableHttps = true;
                 option.IsEnableCache = true;
             });
@@ -72,8 +72,8 @@ namespace Sample.AspNetCore.Mvc
                 option.Provider = OSSProvider.HuaweiCloud;
                 option.Endpoint = "obs.cn-southwest-2.myhuaweicloud.com"; //不需要带有协议
                 option.Region = "cn-southwest-2";
-                option.AccessKey = "RAXRWFH1GCN3DBCTFSK6";
-                option.SecretKey = "5kfHQlNyXgSjroaLja8oZ5PNWzf0xNxMQwk3Sw0c";
+                option.AccessKey = "R********************6";
+                option.SecretKey = "5*************************************c";
                 option.IsEnableHttps = true;
                 option.IsEnableCache = true;
             });
