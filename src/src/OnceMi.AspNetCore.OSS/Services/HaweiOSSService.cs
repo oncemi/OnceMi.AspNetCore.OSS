@@ -428,12 +428,17 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            objectName = FormatObjectName(objectName);
             if (string.IsNullOrEmpty(fileName))
             {
                 throw new ArgumentNullException(nameof(fileName));
             }
-
+            string fullPath = Path.GetFullPath(fileName);
+            string parentPath = Path.GetDirectoryName(fullPath);
+            if (!string.IsNullOrEmpty(parentPath) && !Directory.Exists(parentPath))
+            {
+                Directory.CreateDirectory(parentPath);
+            }
+            objectName = FormatObjectName(objectName);
             GetObjectRequest request = new GetObjectRequest()
             {
                 BucketName = bucketName,
@@ -441,10 +446,7 @@ namespace OnceMi.AspNetCore.OSS
             };
             using (GetObjectResponse response = _client.GetObject(request))
             {
-                if (!File.Exists(fileName))
-                {
-                    response.WriteResponseStreamToFile(fileName);
-                }
+                response.WriteResponseStreamToFile(fullPath);
             }
             return Task.CompletedTask;
 

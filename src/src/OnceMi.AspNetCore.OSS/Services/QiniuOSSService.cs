@@ -558,13 +558,16 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new ArgumentNullException(nameof(fileName));
             }
-            if (File.Exists(fileName))
+            objectName = FormatObjectName(objectName);
+            string fullPath = Path.GetFullPath(fileName);
+            string parentPath = Path.GetDirectoryName(fullPath);
+            if (!string.IsNullOrEmpty(parentPath) && !Directory.Exists(parentPath))
             {
-                File.Delete(fileName);
+                Directory.CreateDirectory(parentPath);
             }
             return GetObjectAsync(bucketName, objectName, (stream) =>
             {
-                using (FileStream fs = new FileStream(fileName, FileMode.Create, FileAccess.Write))
+                using (FileStream fs = new FileStream(fullPath, FileMode.Create, FileAccess.Write))
                 {
                     stream.CopyTo(fs);
                     fs.Close();

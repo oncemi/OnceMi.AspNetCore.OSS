@@ -15,24 +15,6 @@ namespace OnceMi.AspNetCore.OSS
             this.Options = options ?? throw new ArgumentNullException(nameof(OSSOptions));
         }
 
-        internal virtual string BuildPresignedObjectCacheKey(string bucketName, string objectName, PresignedObjectType type)
-        {
-            return Encrypt.MD5($"{this.GetType().FullName}_{bucketName}_{objectName}_{type.ToString().ToUpper()}");
-        }
-
-        internal virtual string FormatObjectName(string objectName)
-        {
-            if (string.IsNullOrEmpty(objectName) || objectName == "/")
-            {
-                throw new ArgumentNullException(nameof(objectName));
-            }
-            if (objectName.StartsWith('/'))
-            {
-                return objectName.TrimStart('/');
-            }
-            return objectName;
-        }
-
         public virtual Task RemovePresignedUrlCache(string bucketName, string objectName)
         {
             if (string.IsNullOrEmpty(bucketName))
@@ -48,6 +30,19 @@ namespace OnceMi.AspNetCore.OSS
                 _cache.Remove(key);
             }
             return Task.CompletedTask;
+        }
+
+        internal virtual string FormatObjectName(string objectName)
+        {
+            if (string.IsNullOrEmpty(objectName) || objectName == "/")
+            {
+                throw new ArgumentNullException(nameof(objectName));
+            }
+            if (objectName.StartsWith('/'))
+            {
+                return objectName.TrimStart('/');
+            }
+            return objectName;
         }
 
         internal virtual async Task<string> PresignedObjectAsync(string bucketName
@@ -124,6 +119,11 @@ namespace OnceMi.AspNetCore.OSS
             {
                 throw new Exception($"Presigned {(type == PresignedObjectType.Get ? "get" : "put")} url for object '{objectName}' from {bucketName} failed. {ex.Message}", ex);
             }
+        }
+
+        private string BuildPresignedObjectCacheKey(string bucketName, string objectName, PresignedObjectType type)
+        {
+            return Encrypt.MD5($"{this.GetType().FullName}_{bucketName}_{objectName}_{type.ToString().ToUpper()}");
         }
     }
 }

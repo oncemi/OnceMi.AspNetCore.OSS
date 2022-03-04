@@ -358,12 +358,15 @@ namespace OnceMi.AspNetCore.OSS
                 throw new Exception($"Object '{objectName}' not in bucket '{bucketName}'");
             }
             bucketName = ConvertBucketName(bucketName);
+            string fullPath = Path.GetFullPath(fileName);
+            string parentPath = Path.GetDirectoryName(fullPath);
+            if (!string.IsNullOrEmpty(parentPath) && !Directory.Exists(parentPath))
+            {
+                Directory.CreateDirectory(parentPath);
+            }
             await Task.Run(() =>
             {
-                string path = Path.GetFullPath(fileName);
-                path = Directory.GetParent(fileName).FullName;
-                string name = Path.GetFileName(fileName);
-                GetObjectRequest request = new GetObjectRequest(bucketName, objectName, path, name);
+                GetObjectRequest request = new GetObjectRequest(bucketName, objectName, parentPath, Path.GetFileName(fullPath));
                 _client.GetObject(request);
             }, cancellationToken);
         }

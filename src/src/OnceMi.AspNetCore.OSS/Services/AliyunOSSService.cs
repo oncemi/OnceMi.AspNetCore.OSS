@@ -235,30 +235,32 @@ namespace OnceMi.AspNetCore.OSS
             return Task.CompletedTask;
         }
 
-        public Task GetObjectAsync(string bucketName, string objectName, string fileName, CancellationToken cancellationToken = default)
+        public async Task GetObjectAsync(string bucketName, string objectName, string fileName, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            objectName = FormatObjectName(objectName);
             if (string.IsNullOrEmpty(fileName))
             {
                 throw new ArgumentNullException(nameof(fileName));
             }
-            GetObjectAsync(bucketName, objectName, (st) =>
-              {
-                  byte[] buf = new byte[1024];
-                  var fs = File.Open(fileName, FileMode.OpenOrCreate);
-                  var len = 0;
-                  // 通过输入流将文件的内容读取到文件或者内存中。
-                  while ((len = st.Read(buf.AsSpan(0, 1024))) != 0)
-                  {
-                      fs.Write(buf.AsSpan(0, len));
-                  }
-                  fs.Close();
-              }, cancellationToken);
-            return Task.CompletedTask;
+            string fullPath = Path.GetFullPath(fileName);
+            string parentPath = Path.GetDirectoryName(fullPath);
+            if (!string.IsNullOrEmpty(parentPath) && !Directory.Exists(parentPath))
+            {
+                Directory.CreateDirectory(parentPath);
+            }
+            objectName = FormatObjectName(objectName);
+            await GetObjectAsync(bucketName, objectName, (stream) =>
+            {
+                using (FileStream fs = new FileStream(fullPath, FileMode.Create, FileAccess.Write))
+                {
+                    stream.CopyTo(fs);
+                    fs.Close();
+                    stream.Dispose();
+                }
+            }, cancellationToken);
         }
 
         public Task<List<Item>> ListObjectsAsync(string bucketName, string prefix = null)
