@@ -138,6 +138,7 @@ public async Task<IActionResult> ListBuckets()
 | SessionToken  | string  | token  |   |  仅Minio中使用  |
 | IsEnableHttps  | bool  | 是否启用HTTPS  |  true  |  建议启用  |
 | IsEnableCache  | bool  | 是否启用缓存  |  true  |  启用后将缓存签名URL，以减少请求次数  |
+| UseCustumCacheProvider  | bool  | 是否使用自定义缓存提供器  |  false  |  将用自己实现的缓存提供器替代内部的MemoryCache，如使用Redis  |
 
 ### API参考  
 
@@ -328,12 +329,62 @@ Task<ItemMeta> GetObjectMetadataAsync(string bucketName
 清除该对象的访问权限或将其恢复至继承权限。  
 注意：七牛云对象储存不支持此操作！   
 
+### 替换内部缓存提供器
+
+如果启用了缓存来缓存签名URL，可以提高单个文件的签名URL请求效率。由于1.1.3之前版本使用的MemoryCache，有三个问题：  
+1、不支持分布式，只能单机缓存  
+2、大量占用应用服务器内存  
+3、应用重启之后，之前的缓存丢失  
+
+从1.1.3开始，提供了一个ICacheProvider接口。用户可以自己实现此接口，替换掉内部的MemoryCache，比如使用Redis。  
+下面是代码：
+```csharp
+class RedisCacheProvider : ICacheProvider
+{
+    private readonly RedisClient _cache;
+
+    public RedisCacheProvider(RedisClient cache)
+    {
+        this._cache = cache ?? throw new ArgumentNullException(nameof(cache));
+    }
+
+    public T Get<T>(string key) where T : class
+    {
+        string val = _cache.Get(key);
+        if (string.IsNullOrEmpty(val))
+        {
+            return default(T);
+        }
+        return JsonUtil.DeserializeStringToObject<T>(val);
+    }
+
+    public void Remove(string key)
+    {
+        _cache.Del(key);
+    }
+
+    public void Set<T>(string key, T value, TimeSpan ts) where T : class
+    {
+        string stringVal = JsonUtil.SerializeToString(value);
+        _cache.Set(key, stringVal, ts);
+    }
+}
+
+//然后在ConfigureServices中注入
+var client = new RedisClient("127.0.0.1:6379,password=,ConnectTimeout=3000,defaultdatabase=0");
+services.TryAddSingleton<RedisClient>(client);
+services.TryAddSingleton<ICacheProvider, RedisCacheProvider>();
+```
+
 ## Dependencies
 
 1. Aliyun.OSS.SDK.NetCore
 2. Microsoft.Extensions.Caching.Memory
 3. Newtonsoft.Json
 4. Tencent.QCloud.Cos.Sdk
+5. Minio
+6. Qiniu
+7. https://github.com/huaweicloud/huaweicloud-sdk-dotnet-obs
 
 ## To do list  
 1. 修改签名URL过期策略为滑动过期策略  

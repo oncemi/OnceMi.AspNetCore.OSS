@@ -43,9 +43,8 @@ namespace Sample.AspNetCore.Mvc
                 option.IsEnableHttps = true;
                 option.IsEnableCache = true;
 
-                //是否是否使用自定义缓存提供器
-                //如果启用此项配置，将使用自定义的缓存提供器替换默认的MemoryCache
-                //前提是如上面代码所示，实现了自己缓存提供器
+                //是否使用自定义缓存提供器
+                //启用此项配置的前提是如上面代码所示，实现了自己缓存提供器
                 option.UseCustumCacheProvider = false;
             });
 

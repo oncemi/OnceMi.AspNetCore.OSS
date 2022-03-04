@@ -1,10 +1,7 @@
 ﻿using FreeRedis;
-using Microsoft.Extensions.Caching.Memory;
 using OnceMi.AspNetCore.OSS;
 using OnceMi.Framework.Util.Json;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Sample.AspNetCore.Mvc.CacheProviders
 {
