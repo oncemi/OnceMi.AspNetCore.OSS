@@ -38,16 +38,34 @@ namespace OnceMi.AspNetCore.OSS
 
     public class OSSOptions
     {
+        /// <summary>
+        /// 枚举，OOS提供商
+        /// </summary>
         public OSSProvider Provider { get; set; }
 
+        /// <summary>
+        /// 节点
+        /// </summary>
+        /// <remarks>
+        /// 腾讯云中表示AppId
+        /// </remarks>
         public string Endpoint { get; set; }
 
+        /// <summary>
+        /// AccessKey
+        /// </summary>
         public string AccessKey { get; set; }
 
+        /// <summary>
+        /// SecretKey
+        /// </summary>
         public string SecretKey { get; set; }
 
         private string _region = "us-east-1";
 
+        /// <summary>
+        /// 地域
+        /// </summary>
         public string Region
         {
             get
@@ -67,13 +85,25 @@ namespace OnceMi.AspNetCore.OSS
             }
         }
 
+        /// <summary>
+        /// SessionToken(Minio有效)
+        /// </summary>
         public string SessionToken { get; set; }
 
+        /// <summary>
+        /// 是否启用HTTPS
+        /// </summary>
         public bool IsEnableHttps { get; set; } = true;
 
         /// <summary>
-        /// 是否启用Redis缓存临时URL
+        /// 是否启用缓存，默认缓存在MemeryCache中（可使用自行实现的缓存替代默认缓存）
+        /// 在使用之前请评估当前应用的缓存能力能否顶住当前请求
         /// </summary>
         public bool IsEnableCache { get; set; } = false;
+
+        /// <summary>
+        /// 是否使用自定义缓存提供器
+        /// </summary>
+        public bool UseCustumCacheProvider { get; set; } = false;
     }
 }

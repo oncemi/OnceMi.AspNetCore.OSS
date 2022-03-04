@@ -7,7 +7,6 @@ using COSXML.Model.Object;
 using COSXML.Model.Service;
 using COSXML.Model.Tag;
 using Microsoft.AspNetCore.StaticFiles;
-using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -27,7 +26,8 @@ namespace OnceMi.AspNetCore.OSS
             }
         }
 
-        public QCloudOSSService(IMemoryCache cache, OSSOptions options) : base(cache, options)
+        public QCloudOSSService(ICacheProvider cache, OSSOptions options) 
+            : base(cache, options)
         {
             CosXmlConfig config = new CosXmlConfig.Builder()
                 .IsHttps(options.IsEnableHttps)

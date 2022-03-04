@@ -1,18 +1,17 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using System;
+﻿using System;
 using System.Threading.Tasks;
 
 namespace OnceMi.AspNetCore.OSS
 {
     public abstract class BaseOSSService
     {
-        protected readonly IMemoryCache _cache;
+        private readonly ICacheProvider _cache;
         public OSSOptions Options { get; private set; }
 
-        public BaseOSSService(IMemoryCache cache, OSSOptions options)
+        public BaseOSSService(ICacheProvider cache, OSSOptions options)
         {
-            this._cache = cache ?? throw new ArgumentNullException(nameof(IMemoryCache));
-            this.Options = options ?? throw new ArgumentNullException(nameof(OSSOptions));
+            this._cache = cache ?? throw new ArgumentNullException(nameof(cache));
+            this.Options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
         public virtual Task RemovePresignedUrlCache(string bucketName, string objectName)
@@ -123,7 +122,7 @@ namespace OnceMi.AspNetCore.OSS
 
         private string BuildPresignedObjectCacheKey(string bucketName, string objectName, PresignedObjectType type)
         {
-            return Encrypt.MD5($"{this.GetType().FullName}_{bucketName}_{objectName}_{type.ToString().ToUpper()}");
+            return "OSS:" + Encrypt.MD5($"{this.GetType().FullName}_{bucketName}_{objectName}_{type.ToString().ToUpper()}");
         }
     }
 }

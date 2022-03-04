@@ -1,5 +1,4 @@
 ﻿using Aliyun.OSS;
-using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -21,7 +20,7 @@ namespace OnceMi.AspNetCore.OSS
             }
         }
 
-        public AliyunOSSService(IMemoryCache cache
+        public AliyunOSSService(ICacheProvider cache
             , OSSOptions options) : base(cache, options)
         {
             if (options == null)

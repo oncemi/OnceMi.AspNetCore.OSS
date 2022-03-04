@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.StaticFiles;
-using Microsoft.Extensions.Caching.Memory;
 using OnceMi.AspNetCore.OSS.Models.Qiniu;
 using Qiniu.Http;
 using Qiniu.Storage;
@@ -37,7 +36,8 @@ namespace OnceMi.AspNetCore.OSS
             {"Asia_South", "as0"},
         };
 
-        public QiniuOSSService(IMemoryCache cache, OSSOptions options) : base(cache, options)
+        public QiniuOSSService(ICacheProvider cache, OSSOptions options) 
+            : base(cache, options)
         {
             _mac = new Mac(this.Options.AccessKey, this.Options.SecretKey);
             _config = new Config();

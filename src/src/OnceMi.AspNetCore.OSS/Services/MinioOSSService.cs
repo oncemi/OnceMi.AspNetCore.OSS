@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.StaticFiles;
-using Microsoft.Extensions.Caching.Memory;
 using Minio;
 using Minio.DataModel;
 using Minio.Exceptions;
@@ -25,7 +24,8 @@ namespace OnceMi.AspNetCore.OSS
             }
         }
 
-        public MinioOSSService(IMemoryCache cache, OSSOptions options) : base(cache, options)
+        public MinioOSSService(ICacheProvider cache, OSSOptions options) 
+            : base(cache, options)
         {
             MinioClient client = new MinioClient()
                 .WithEndpoint(options.Endpoint)

@@ -12,11 +12,11 @@ namespace OnceMi.AspNetCore.OSS
     public class OSSServiceFactory : IOSSServiceFactory
     {
         private readonly IOptionsMonitor<OSSOptions> optionsMonitor;
-        private readonly IMemoryCache _cache;
+        private readonly ICacheProvider _cache;
         private readonly ILoggerFactory logger;
 
         public OSSServiceFactory(IOptionsMonitor<OSSOptions> optionsMonitor
-            , IMemoryCache provider
+            , ICacheProvider provider
             , ILoggerFactory logger)
         {
             this.optionsMonitor = optionsMonitor ?? throw new ArgumentNullException();

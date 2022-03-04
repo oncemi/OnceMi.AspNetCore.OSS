@@ -1,10 +1,13 @@
+using FreeRedis;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using OnceMi.AspNetCore.OSS;
+using Sample.AspNetCore.Mvc.CacheProviders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,16 +27,26 @@ namespace Sample.AspNetCore.Mvc
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            //使用Redis来替换默认的缓存实现
+            var client = new RedisClient("127.0.0.1:6379,password=,ConnectTimeout=3000,defaultdatabase=0");
+            services.TryAddSingleton<RedisClient>(client);
+            services.TryAddSingleton<ICacheProvider, RedisCacheProvider>();
+
             //default minio
             //添加默认对象储存配置信息
             services.AddOSSService(option =>
             {
                 option.Provider = OSSProvider.Minio;
                 option.Endpoint = "oss.oncemi.com:9000";  //不需要带有协议
-                option.AccessKey = "r****************t";
-                option.SecretKey = "Q***************************z";
+                option.AccessKey = "L*********************U";
+                option.SecretKey = "D**************************M";
                 option.IsEnableHttps = true;
                 option.IsEnableCache = true;
+
+                //是否是否使用自定义缓存提供器
+                //如果启用此项配置，将使用自定义的缓存提供器替换默认的MemoryCache
+                //前提是如上面代码所示，实现了自己缓存提供器
+                option.UseCustumCacheProvider = false;
             });
 
             //aliyun oss

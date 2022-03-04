@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using OBS;
+﻿using OBS;
 using OBS.Model;
 using OnceMi.AspNetCore.OSS.Models.Huawei;
 using System;
@@ -30,7 +29,8 @@ namespace OnceMi.AspNetCore.OSS
             }
         }
 
-        public HaweiOSSService(IMemoryCache cache, OSSOptions options) : base(cache, options)
+        public HaweiOSSService(ICacheProvider cache, OSSOptions options) 
+            : base(cache, options)
         {
             string endPoint = options.Endpoint;
             //如果是不带协议的endpoint，添加协议

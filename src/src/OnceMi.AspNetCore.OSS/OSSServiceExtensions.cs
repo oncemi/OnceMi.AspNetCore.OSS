@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -79,16 +80,33 @@ namespace OnceMi.AspNetCore.OSS
                 name = DefaultOptionName.Name;
             }
             services.Configure(name, option);
-
-            using (var provider = services.BuildServiceProvider())
+            //对于IOSSServiceFactory只需要注入一次
+            if (!services.Any(p => p.ServiceType == typeof(IOSSServiceFactory)))
             {
-                var factory = provider.GetService<IOSSServiceFactory>();
-                if (factory == null)
+                using (var provider = services.BuildServiceProvider())
                 {
-                    services.AddMemoryCache();
-                    services.TryAddSingleton<IOSSServiceFactory, OSSServiceFactory>();
+                    OSSOptions optVal = provider.GetRequiredService<IOptionsMonitor<OSSOptions>>().Get(name);
+                    if (optVal == null)
+                    {
+                        throw new Exception("Can not get OSSOptions from service collection");
+                    }
+                    if (optVal.UseCustumCacheProvider && optVal.IsEnableCache)
+                    {
+                        ICacheProvider cacheProvider = provider.GetService<ICacheProvider>();
+                        if (cacheProvider == null)
+                        {
+                            throw new Exception("Unable to get interface 'ICacheProvider's implementation.");
+                        }
+                    }
+                    else
+                    {
+                        services.AddMemoryCache();
+                        services.TryAddSingleton<ICacheProvider, MemoryCacheProvider>();
+                    }
                 }
+                services.TryAddSingleton<IOSSServiceFactory, OSSServiceFactory>();
             }
+            //
             services.TryAddScoped(sp => sp.GetRequiredService<IOSSServiceFactory>().Create(name));
             return services;
         }
