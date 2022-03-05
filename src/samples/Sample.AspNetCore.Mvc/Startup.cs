@@ -38,14 +38,10 @@ namespace Sample.AspNetCore.Mvc
             {
                 option.Provider = OSSProvider.Minio;
                 option.Endpoint = "oss.oncemi.com:9000";  //不需要带有协议
-                option.AccessKey = "L*********************U";
-                option.SecretKey = "D**************************M";
+                option.AccessKey = "root";
+                option.SecretKey = "Qojt3k-9X4cpNiu3rggwB-mmwQ24hcK7Vz";
                 option.IsEnableHttps = true;
                 option.IsEnableCache = true;
-
-                //是否使用自定义缓存提供器
-                //启用此项配置的前提是如上面代码所示，实现了自己缓存提供器
-                option.UseCustumCacheProvider = false;
             });
 
             //aliyun oss

@@ -3,7 +3,7 @@ using System.IO;
 
 namespace OnceMi.AspNetCore.OSS
 {
-    class JsonUtil
+    static class JsonUtil
     {
         /// <summary>
         /// 将对象序列化为JSON格式

@@ -2,7 +2,7 @@
 
 namespace OnceMi.AspNetCore.OSS
 {
-    class TimeUtil
+    static class TimeUtil
     {
         /// <summary>
         /// 将时间转换成unix时间戳

@@ -18,7 +18,6 @@ namespace Sample.AspNetCore.Mvc.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IOSSService _OSSService;
-        private readonly string _bucketName = "default-dev";
 
         public HomeController(ILogger<HomeController> logger
             , IOSSService OSSService)

@@ -83,26 +83,11 @@ namespace OnceMi.AspNetCore.OSS
             //对于IOSSServiceFactory只需要注入一次
             if (!services.Any(p => p.ServiceType == typeof(IOSSServiceFactory)))
             {
-                using (var provider = services.BuildServiceProvider())
+                //如果未注入ICacheProvider，默认注入MemoryCacheProvider
+                if (!services.Any(p => p.ServiceType == typeof(ICacheProvider)))
                 {
-                    OSSOptions optVal = provider.GetRequiredService<IOptionsMonitor<OSSOptions>>().Get(name);
-                    if (optVal == null)
-                    {
-                        throw new Exception("Can not get OSSOptions from service collection");
-                    }
-                    if (optVal.UseCustumCacheProvider && optVal.IsEnableCache)
-                    {
-                        ICacheProvider cacheProvider = provider.GetService<ICacheProvider>();
-                        if (cacheProvider == null)
-                        {
-                            throw new Exception("Unable to get interface 'ICacheProvider's implementation.");
-                        }
-                    }
-                    else
-                    {
-                        services.AddMemoryCache();
-                        services.TryAddSingleton<ICacheProvider, MemoryCacheProvider>();
-                    }
+                    services.AddMemoryCache();
+                    services.TryAddSingleton<ICacheProvider, MemoryCacheProvider>();
                 }
                 services.TryAddSingleton<IOSSServiceFactory, OSSServiceFactory>();
             }

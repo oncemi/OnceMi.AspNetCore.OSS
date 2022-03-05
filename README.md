@@ -138,7 +138,6 @@ public async Task<IActionResult> ListBuckets()
 | SessionToken  | string  | token  |   |  仅Minio中使用  |
 | IsEnableHttps  | bool  | 是否启用HTTPS  |  true  |  建议启用  |
 | IsEnableCache  | bool  | 是否启用缓存  |  true  |  启用后将缓存签名URL，以减少请求次数  |
-| UseCustumCacheProvider  | bool  | 是否使用自定义缓存提供器  |  false  |  将用自己实现的缓存提供器替代内部的MemoryCache，如使用Redis  |
 
 ### API参考  
 
@@ -370,9 +369,10 @@ class RedisCacheProvider : ICacheProvider
     }
 }
 
-//然后在ConfigureServices中注入
+//构建Redis Client
 var client = new RedisClient("127.0.0.1:6379,password=,ConnectTimeout=3000,defaultdatabase=0");
 services.TryAddSingleton<RedisClient>(client);
+//注入ICacheProvider，一定要在AddOSSService之前注入
 services.TryAddSingleton<ICacheProvider, RedisCacheProvider>();
 ```
 

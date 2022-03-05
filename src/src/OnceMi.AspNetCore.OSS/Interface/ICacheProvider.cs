@@ -11,7 +11,7 @@ namespace OnceMi.AspNetCore.OSS
         void Remove(string key);
 
         /// <summary>
-        /// 根据Key从缓存中获取
+        /// 根据Key从缓存中获取对象
         /// </summary>
         /// <param name="key"></param>
         T Get<T>(string key) where T : class;
