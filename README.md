@@ -386,6 +386,6 @@ services.TryAddSingleton<ICacheProvider, RedisCacheProvider>();
 7. https://github.com/huaweicloud/huaweicloud-sdk-dotnet-obs
 
 ## To do list  
-~~1. 修改签名URL过期策略为滑动过期策略    
-2. 文件分页加载
-3. 文件分片上传
+~~1. 修改签名URL过期策略为滑动过期策略~~  
+2. 文件分页加载  
+3. 文件分片上传  
