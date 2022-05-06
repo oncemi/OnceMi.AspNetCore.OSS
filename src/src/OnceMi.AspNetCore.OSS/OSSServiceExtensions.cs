@@ -58,7 +58,6 @@ namespace OnceMi.AspNetCore.OSS
                  o.Provider = options.Provider;
                  o.Region = options.Region;
                  o.SecretKey = options.SecretKey;
-                 o.SessionToken = options.SessionToken;
              });
         }
 

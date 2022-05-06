@@ -234,7 +234,7 @@ namespace OnceMi.AspNetCore.OSS
             return Task.CompletedTask;
         }
 
-        public async Task GetObjectAsync(string bucketName, string objectName, string fileName, CancellationToken cancellationToken = default)
+        public Task GetObjectAsync(string bucketName, string objectName, string fileName, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
@@ -251,13 +251,13 @@ namespace OnceMi.AspNetCore.OSS
                 Directory.CreateDirectory(parentPath);
             }
             objectName = FormatObjectName(objectName);
-            await GetObjectAsync(bucketName, objectName, (stream) =>
+            return GetObjectAsync(bucketName, objectName, (stream) =>
             {
                 using (FileStream fs = new FileStream(fullPath, FileMode.Create, FileAccess.Write))
                 {
                     stream.CopyTo(fs);
-                    fs.Close();
                     stream.Dispose();
+                    fs.Close();
                 }
             }, cancellationToken);
         }
@@ -277,7 +277,8 @@ namespace OnceMi.AspNetCore.OSS
                 var listObjectsRequest = new ListObjectsRequest(bucketName)
                 {
                     Marker = nextMarker,
-                    MaxKeys = 100
+                    MaxKeys = 100,
+                    Prefix = prefix,
                 };
                 resultObj = _client.ListObjects(listObjectsRequest);
                 if (resultObj == null)

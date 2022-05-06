@@ -365,6 +365,7 @@ namespace OBS
                 WebsiteRedirectLocation = resumableUploadRequest.WebsiteRedirectLocation,
                 Expires = resumableUploadRequest.Expires,
                 ContentType = resumableUploadRequest.ContentType,
+                ContentDisposition = resumableUploadRequest.ContentDisposition,
                 SuccessRedirectLocation = resumableUploadRequest.SuccessRedirectLocation,
                 SseHeader = resumableUploadRequest.SseHeader
             };

@@ -1553,6 +1553,11 @@ namespace OBS.Internal
                 CommonUtil.AddHeader(httpRequest, Constants.CommonHeaders.ContentType, request.ContentType);
             }
 
+            if (!string.IsNullOrEmpty(request.ContentDisposition))
+            {
+                CommonUtil.AddHeader(httpRequest, Constants.CommonHeaders.ContentDisposition, request.ContentDisposition);
+            }
+
             if (!string.IsNullOrEmpty(request.ContentMd5))
             {
                 CommonUtil.AddHeader(httpRequest, Constants.CommonHeaders.ContentMd5, request.ContentMd5);
@@ -1595,6 +1600,11 @@ namespace OBS.Internal
             if (!string.IsNullOrEmpty(request.ContentType))
             {
                 CommonUtil.AddHeader(httpRequest, Constants.CommonHeaders.ContentType, request.ContentType);
+            }
+
+            if (!string.IsNullOrEmpty(request.ContentDisposition))
+            {
+                CommonUtil.AddHeader(httpRequest, Constants.CommonHeaders.ContentDisposition, request.ContentDisposition);
             }
 
             CommonUtil.AddHeader(httpRequest, this.iheaders.MetadataDirectiveHeader(), request.MetadataDirective.ToString().ToUpper());
@@ -1645,6 +1655,11 @@ namespace OBS.Internal
             if (!string.IsNullOrEmpty(request.ContentType))
             {
                 CommonUtil.AddHeader(httpRequest, Constants.CommonHeaders.ContentType, request.ContentType);
+            }
+
+            if (!string.IsNullOrEmpty(request.ContentDisposition))
+            {
+                CommonUtil.AddHeader(httpRequest, Constants.CommonHeaders.ContentDisposition, request.ContentDisposition);
             }
 
             if (request.Expires.HasValue)

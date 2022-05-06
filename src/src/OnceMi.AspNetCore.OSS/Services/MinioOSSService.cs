@@ -24,13 +24,12 @@ namespace OnceMi.AspNetCore.OSS
             }
         }
 
-        public MinioOSSService(ICacheProvider cache, OSSOptions options) 
+        public MinioOSSService(ICacheProvider cache, OSSOptions options)
             : base(cache, options)
         {
             MinioClient client = new MinioClient()
                 .WithEndpoint(options.Endpoint)
                 .WithRegion(options.Region)
-                .WithSessionToken(options.SessionToken)
                 .WithCredentials(options.AccessKey, options.SecretKey);
             if (options.IsEnableHttps)
             {
@@ -354,14 +353,14 @@ namespace OnceMi.AspNetCore.OSS
 
         #region Bucket
 
-        public async Task<bool> BucketExistsAsync(string bucketName)
+        public Task<bool> BucketExistsAsync(string bucketName)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
             var args = new BucketExistsArgs().WithBucket(bucketName);
-            return await _client.BucketExistsAsync(args);
+            return _client.BucketExistsAsync(args);
         }
 
         public async Task<bool> CreateBucketAsync(string bucketName)
@@ -428,7 +427,7 @@ namespace OnceMi.AspNetCore.OSS
             }
         }
 
-        public async Task<bool> SetBucketAclAsync(string bucketName, AccessMode mode)
+        public Task<bool> SetBucketAclAsync(string bucketName, AccessMode mode)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
@@ -463,7 +462,7 @@ namespace OnceMi.AspNetCore.OSS
                             IsDelete = false
                         });
 
-                        return await this.SetPolicyAsync(bucketName, statementItems);
+                        return this.SetPolicyAsync(bucketName, statementItems);
                     }
                 case AccessMode.PublicRead:
                     {
@@ -511,7 +510,7 @@ namespace OnceMi.AspNetCore.OSS
                             },
                             IsDelete = false
                         });
-                        return await this.SetPolicyAsync(bucketName, statementItems);
+                        return this.SetPolicyAsync(bucketName, statementItems);
                     }
                 case AccessMode.PublicReadWrite:
                     {
@@ -538,12 +537,12 @@ namespace OnceMi.AspNetCore.OSS
                             },
                             IsDelete = false
                         });
-                        return await this.SetPolicyAsync(bucketName, statementItems);
+                        return this.SetPolicyAsync(bucketName, statementItems);
                     }
                 case AccessMode.Default:
                 default:
                     {
-                        return await this.RemovePolicyAsync(bucketName);
+                        return this.RemovePolicyAsync(bucketName);
                     }
             }
         }
@@ -705,7 +704,7 @@ namespace OnceMi.AspNetCore.OSS
                 {
                     callback(stream);
                 });
-            await _client.GetObjectAsync(args, cancellationToken);
+            _ = await _client.GetObjectAsync(args, cancellationToken);
         }
 
         public async Task GetObjectAsync(string bucketName, string objectName, string fileName, CancellationToken cancellationToken = default)
@@ -729,11 +728,11 @@ namespace OnceMi.AspNetCore.OSS
                     using (FileStream fs = new FileStream(fullPath, FileMode.Create, FileAccess.Write))
                     {
                         stream.CopyTo(fs);
-                        fs.Close();
                         stream.Dispose();
+                        fs.Close();
                     }
                 });
-            await _client.GetObjectAsync(args, cancellationToken);
+            _ = await _client.GetObjectAsync(args, cancellationToken);
         }
 
         public async Task<bool> PutObjectAsync(string bucketName, string objectName, Stream data, CancellationToken cancellationToken = default)
@@ -928,9 +927,9 @@ namespace OnceMi.AspNetCore.OSS
         /// <param name="objectName"></param>
         /// <param name="expiresInt"></param>
         /// <returns></returns>
-        public async Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt)
+        public Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt)
         {
-            return await PresignedObjectAsync(bucketName
+            return PresignedObjectAsync(bucketName
                 , objectName
                 , expiresInt
                 , PresignedObjectType.Get
@@ -954,9 +953,9 @@ namespace OnceMi.AspNetCore.OSS
                 });
         }
 
-        public async Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)
+        public Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)
         {
-            return await PresignedObjectAsync(bucketName
+            return PresignedObjectAsync(bucketName
                 , objectName
                 , expiresInt
                 , PresignedObjectType.Put
@@ -992,7 +991,7 @@ namespace OnceMi.AspNetCore.OSS
             return Task.FromResult(true);
         }
 
-        public async Task<bool> SetObjectAclAsync(string bucketName, string objectName, AccessMode mode)
+        public Task<bool> SetObjectAclAsync(string bucketName, string objectName, AccessMode mode)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
@@ -1030,7 +1029,7 @@ namespace OnceMi.AspNetCore.OSS
                             },
                             IsDelete = false
                         });
-                        return await this.SetPolicyAsync(bucketName, statementItems);
+                        return this.SetPolicyAsync(bucketName, statementItems);
                     }
                 case AccessMode.PublicRead:
                     {
@@ -1077,7 +1076,7 @@ namespace OnceMi.AspNetCore.OSS
                             },
                             IsDelete = false
                         });
-                        return await this.SetPolicyAsync(bucketName, statementItems);
+                        return this.SetPolicyAsync(bucketName, statementItems);
                     }
                 case AccessMode.PublicReadWrite:
                     {
@@ -1103,7 +1102,7 @@ namespace OnceMi.AspNetCore.OSS
                             },
                             IsDelete = false
                         });
-                        return await this.SetPolicyAsync(bucketName, statementItems);
+                        return this.SetPolicyAsync(bucketName, statementItems);
                     }
                 case AccessMode.Default:
                 default:

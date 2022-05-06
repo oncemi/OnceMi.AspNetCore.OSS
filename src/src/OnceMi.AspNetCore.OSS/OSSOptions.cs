@@ -86,11 +86,6 @@ namespace OnceMi.AspNetCore.OSS
         }
 
         /// <summary>
-        /// SessionToken(Minio有效)
-        /// </summary>
-        public string SessionToken { get; set; }
-
-        /// <summary>
         /// 是否启用HTTPS
         /// </summary>
         public bool IsEnableHttps { get; set; } = true;
@@ -100,10 +95,5 @@ namespace OnceMi.AspNetCore.OSS
         /// 在使用之前请评估当前应用的缓存能力能否顶住当前请求
         /// </summary>
         public bool IsEnableCache { get; set; } = false;
-
-        /// <summary>
-        /// 是否使用自定义缓存提供器
-        /// </summary>
-        public bool UseCustumCacheProvider { get; set; } = false;
     }
 }

@@ -59,6 +59,12 @@ namespace OBS.Model
             set;
         }
 
+        public string ContentDisposition
+        {
+            get;
+            set;
+        }
+
         /// <summary>
         /// Object storage class
         /// </summary>
