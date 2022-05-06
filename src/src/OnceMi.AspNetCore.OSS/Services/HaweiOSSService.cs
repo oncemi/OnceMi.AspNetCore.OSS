@@ -339,6 +339,7 @@ namespace OnceMi.AspNetCore.OSS
             }
             return Task.FromResult(newMeta);
         }
+
         /// <summary>
         /// 列表对象
         /// </summary>
@@ -414,6 +415,7 @@ namespace OnceMi.AspNetCore.OSS
             }
             return Task.CompletedTask;
         }
+
         /// <summary>
         /// 下载到指定文件
         /// </summary>

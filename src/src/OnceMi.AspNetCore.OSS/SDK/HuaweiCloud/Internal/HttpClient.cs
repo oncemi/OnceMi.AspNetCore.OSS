@@ -464,6 +464,8 @@ namespace OBS.Internal
             webRequest.Method = request.Method.ToString();
             webRequest.AllowAutoRedirect = false;
 
+
+#if donetcore
             foreach (KeyValuePair<string, string> header in request.Headers)
             {
                 if (header.Key.Equals(Constants.CommonHeaders.ContentLength, StringComparison.OrdinalIgnoreCase))
@@ -473,6 +475,24 @@ namespace OBS.Internal
 
                 webRequest.Headers.Add(header.Key, header.Value);
             }
+#else
+            try
+            {
+                webRequest.ServicePoint.ReceiveBufferSize = obsConfig.ReceiveBufferSize;
+            }
+            catch (Exception)
+            {
+                //ignore
+            }
+            foreach (KeyValuePair<string, string> header in request.Headers)
+            {
+                if (header.Key.Equals(Constants.CommonHeaders.ContentLength, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+                GetAddHeaderInternal().Invoke(webRequest.Headers, new object[] { header.Key, header.Value });
+            }
+#endif
             webRequest.UserAgent = Constants.SdkUserAgent;
         }
 

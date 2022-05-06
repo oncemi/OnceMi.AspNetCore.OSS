@@ -135,7 +135,6 @@ public async Task<IActionResult> ListBuckets()
 | AccessKey  | string  | AccessKey  | F...............s  |    |
 | SecretKey  | string  | SecretKey  | v...............d  |    |
 | Region  | string  | 地域  | ap-chengdu  |    |
-| SessionToken  | string  | token  |   |  仅Minio中使用  |
 | IsEnableHttps  | bool  | 是否启用HTTPS  |  true  |  建议启用  |
 | IsEnableCache  | bool  | 是否启用缓存  |  true  |  启用后将缓存签名URL，以减少请求次数  |
 
