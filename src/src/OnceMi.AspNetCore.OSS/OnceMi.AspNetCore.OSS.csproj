@@ -14,6 +14,14 @@
 		<PackageReleaseNotes>内置Minio SDK;更新华为SDK;修复阿里云ListObjectsAsync未使用prefix的问题</PackageReleaseNotes>
 	</PropertyGroup>
 
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<DefineConstants>donetcore</DefineConstants>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<DefineConstants>donetcore</DefineConstants>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<PackageReference Include="Aliyun.OSS.SDK.NetCore" Version="2.13.0" />
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
