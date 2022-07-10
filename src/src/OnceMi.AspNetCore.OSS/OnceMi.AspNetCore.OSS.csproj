@@ -5,7 +5,7 @@
 		<Description>ASP.NET Core对象储存扩展。支持Minio自建对象储存、阿里云OSS、腾讯云COS、七牛云Kodo、华为云OBS</Description>
 		<Company>OnceMi</Company>
 		<Authors>OnceMi</Authors>
-		<Version>1.1.5</Version>
+		<Version>1.1.6</Version>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<RepositoryUrl>https://github.com/oncemi/OnceMi.AspNetCore.OSS</RepositoryUrl>
 		<PackageProjectUrl>https://github.com/oncemi/OnceMi.AspNetCore.OSS</PackageProjectUrl>
@@ -25,19 +25,14 @@
 	<ItemGroup>
 		<PackageReference Include="Aliyun.OSS.SDK.NetCore" Version="2.13.0" />
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-		<PackageReference Include="Qiniu" Version="8.0.0" />
-		<PackageReference Include="Tencent.QCloud.Cos.Sdk" Version="5.4.29" />
+		<PackageReference Include="Minio" Version="4.0.4" />
+		<PackageReference Include="Qiniu" Version="8.2.0" />
+		<PackageReference Include="Tencent.QCloud.Cos.Sdk" Version="5.4.31" />
 		<PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.2.0" />
 		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.0.1" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="6.0.0" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
-
-		<!-- 下面的是Minio所需依赖 -->
-		<PackageReference Include="Crc32.NET" Version="1.2.0" />
-		<PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="All" />
-		<PackageReference Include="AsyncFixer" Version="1.5.1" PrivateAssets="All" />
-		<PackageReference Include="System.Reactive.Linq" Version="5.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>

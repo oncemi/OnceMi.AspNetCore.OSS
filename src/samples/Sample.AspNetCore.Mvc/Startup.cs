@@ -39,7 +39,7 @@ namespace Sample.AspNetCore.Mvc
                 option.Provider = OSSProvider.Minio;
                 option.Endpoint = "oss.oncemi.com:9000";  //不需要带有协议
                 option.AccessKey = "root";
-                option.SecretKey = "D**************************M";
+                option.SecretKey = "Q*************************f";
                 option.IsEnableHttps = true;
                 option.IsEnableCache = true;
             });
