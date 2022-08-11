@@ -360,7 +360,7 @@ namespace OnceMi.AspNetCore.OSS
                         Expiration = DateTime.Now.AddSeconds(expiresInt)
                     };
                     var uri = _client.GeneratePresignedUri(req);
-                    if (uri != null)
+                    if (uri == null)
                     {
                         throw new Exception("Generate put presigned uri failed");
                     }
