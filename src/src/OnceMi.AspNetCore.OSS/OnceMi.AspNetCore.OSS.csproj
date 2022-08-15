@@ -5,13 +5,13 @@
 		<Description>ASP.NET Core对象储存扩展。支持Minio自建对象储存、阿里云OSS、腾讯云COS、七牛云Kodo、华为云OBS</Description>
 		<Company>OnceMi</Company>
 		<Authors>OnceMi</Authors>
-		<Version>1.1.7</Version>
+		<Version>1.1.8</Version>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<RepositoryUrl>https://github.com/oncemi/OnceMi.AspNetCore.OSS</RepositoryUrl>
 		<PackageProjectUrl>https://github.com/oncemi/OnceMi.AspNetCore.OSS</PackageProjectUrl>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<RepositoryType>Github</RepositoryType>
-		<PackageReleaseNotes>修复阿里云put签名url判空问题 by staoran</PackageReleaseNotes>
+		<PackageReleaseNotes>修复Configuration被释放的问题</PackageReleaseNotes>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

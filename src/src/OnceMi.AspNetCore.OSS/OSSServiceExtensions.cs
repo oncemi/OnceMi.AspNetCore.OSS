@@ -31,34 +31,34 @@ namespace OnceMi.AspNetCore.OSS
         /// <returns></returns>
         public static IServiceCollection AddOSSService(this IServiceCollection services, string name, string key)
         {
-            ServiceProvider provider = services.BuildServiceProvider();
-            IConfiguration configuration = provider.GetRequiredService<IConfiguration>();
-            if (configuration == null)
+            using (ServiceProvider provider = services.BuildServiceProvider())
             {
-                throw new ArgumentNullException(nameof(IConfiguration));
+                IConfiguration configuration = provider.GetRequiredService<IConfiguration>();
+                if (configuration == null)
+                {
+                    throw new ArgumentNullException(nameof(IConfiguration));
+                }
+                IConfigurationSection section = configuration.GetSection(key);
+                if (!section.Exists())
+                {
+                    throw new Exception($"Config file not exist '{key}' section.");
+                }
+                OSSOptions options = section.Get<OSSOptions>();
+                if (options == null)
+                {
+                    throw new Exception($"Get OSS option from config file failed.");
+                }
+                return services.AddOSSService(name, o =>
+                 {
+                     o.AccessKey = options.AccessKey;
+                     o.Endpoint = options.Endpoint;
+                     o.IsEnableCache = options.IsEnableCache;
+                     o.IsEnableHttps = options.IsEnableHttps;
+                     o.Provider = options.Provider;
+                     o.Region = options.Region;
+                     o.SecretKey = options.SecretKey;
+                 });
             }
-            provider.Dispose();
-
-            IConfigurationSection section = configuration.GetSection(key);
-            if (!section.Exists())
-            {
-                throw new Exception($"Config file not exist '{key}' section.");
-            }
-            OSSOptions options = section.Get<OSSOptions>();
-            if (options == null)
-            {
-                throw new Exception($"Get OSS option from config file failed.");
-            }
-            return services.AddOSSService(name, o =>
-             {
-                 o.AccessKey = options.AccessKey;
-                 o.Endpoint = options.Endpoint;
-                 o.IsEnableCache = options.IsEnableCache;
-                 o.IsEnableHttps = options.IsEnableHttps;
-                 o.Provider = options.Provider;
-                 o.Region = options.Region;
-                 o.SecretKey = options.SecretKey;
-             });
         }
 
         /// <summary>
