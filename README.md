@@ -138,6 +138,16 @@ public async Task<IActionResult> ListBuckets()
 | IsEnableHttps  | bool  | 是否启用HTTPS  |  true  |  建议启用  |
 | IsEnableCache  | bool  | 是否启用缓存  |  true  |  启用后将缓存签名URL，以减少请求次数  |
 
+#### Endpoint查询  
+| Provider  | Endpoint  | Remark  |
+| ------------ | ------------ | ------------ |
+| Minio  | -  | 默认或自建Minio Endpoint  |
+| Aliyun  | https://help.aliyun.com/document_detail/31837.html  | -  |
+| QCloud  | -  | 腾讯云没有Endpoint，此配置项表示AppId  |
+| Qiniu  | https://developer.qiniu.com/kodo/4088/s3-access-domainname  | -  |
+| HuaweiCloud  | https://support.huaweicloud.com/productdesc-obs/obs_03_0152.html  | -  |
+
+
 ### API参考  
 
 ##### BucketExistsAsync  
