@@ -24,6 +24,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Aliyun.OSS.SDK.NetCore" Version="2.13.0" />
+		<PackageReference Include="BceSdkDotNetCore" Version="1.0.2.911" />
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
 		<PackageReference Include="Minio" Version="4.0.5" />
 		<PackageReference Include="Qiniu" Version="8.2.0" />

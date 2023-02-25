@@ -86,6 +86,18 @@ namespace Sample.AspNetCore.Mvc
                 option.IsEnableCache = true;
             });
 
+            //百度云BOS
+            //添加名称为‘baidubos’的OSS对象储存配置信息
+            //Endpoint查询：https://developer.huaweicloud.com/endpoint?OBS
+            services.AddOSSService("baidubos", option =>
+            {
+                option.Provider = OSSProvider.BaiduCloud;
+                option.Endpoint = "https://su.bcebos.com"; //需要带有协议
+                option.AccessKey = "A********************O";
+                option.SecretKey = "d********************d";
+                option.IsEnableHttps = true;
+                option.IsEnableCache = true;
+            });
             services.AddControllersWithViews();
         }
 
