@@ -33,7 +33,12 @@ namespace OnceMi.AspNetCore.OSS
         /// <summary>
         /// 华为云 OBS
         /// </summary>
-        HuaweiCloud = 5
+        HuaweiCloud = 5,
+
+        /// <summary>
+        /// 百度云 BOS
+        /// </summary>
+        BaiduCloud = 6
     }
 
     public class OSSOptions
