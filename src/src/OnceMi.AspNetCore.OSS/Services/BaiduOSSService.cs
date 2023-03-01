@@ -33,7 +33,7 @@ namespace OnceMi.AspNetCore.OSS
                 Credentials = new DefaultBceCredentials(options.AccessKey, options.SecretKey),
                 Endpoint = options.Endpoint
             };
-            _client= new BosClient(config);
+            _client = new BosClient(config);
         }
 
         #region Bucket
@@ -261,14 +261,28 @@ namespace OnceMi.AspNetCore.OSS
 
         public Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt)
         {
-            var res = _client.GeneratePresignedUrl(bucketName, objectName, expiresInt);
-            return Task.FromResult(res.AbsoluteUri);
+            return PresignedObjectAsync(bucketName
+                , objectName
+                , expiresInt
+                , PresignedObjectType.Get
+                , (bucketName, objectName, expiresInt) =>
+                {
+                    var res = _client.GeneratePresignedUrl(bucketName, objectName, expiresInt);
+                    return Task.FromResult(res.AbsoluteUri);
+                });
         }
 
         public Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)
         {
-            var res = _client.GeneratePresignedUrl(bucketName, objectName, expiresInt);
-            return Task.FromResult(res.AbsoluteUri);
+            return PresignedObjectAsync(bucketName
+                , objectName
+                , expiresInt
+                , PresignedObjectType.Put
+                , (bucketName, objectName, expiresInt) =>
+                {
+                    var res = _client.GeneratePresignedUrl(bucketName, objectName, expiresInt);
+                    return Task.FromResult(res.AbsoluteUri);
+                });
         }
 
         public Task<bool> PutObjectAsync(string bucketName, string objectName, Stream data, CancellationToken cancellationToken = default)

@@ -526,7 +526,6 @@ namespace OnceMi.AspNetCore.OSS
                 , PresignedObjectType.Get
                 , async (bucketName, objectName, expiresInt) =>
                 {
-                    objectName = FormatObjectName(objectName);
                     string objectUrl = null;
                     AccessMode accessMode = await this.GetObjectAclAsync(bucketName, objectName);
                     if (accessMode == AccessMode.PublicRead || accessMode == AccessMode.PublicReadWrite)
@@ -569,7 +568,6 @@ namespace OnceMi.AspNetCore.OSS
                 , PresignedObjectType.Put
                 , (bucketName, objectName, expiresInt) =>
                 {
-                    objectName = FormatObjectName(objectName);
                     CreateTemporarySignatureRequest request = new CreateTemporarySignatureRequest()
                     {
                         BucketName = bucketName,

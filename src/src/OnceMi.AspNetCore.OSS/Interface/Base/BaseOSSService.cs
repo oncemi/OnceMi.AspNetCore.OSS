@@ -66,7 +66,6 @@ namespace OnceMi.AspNetCore.OSS
                     throw new Exception("ExpiresIn time no more than 7 days.");
                 }
                 const int minExpiresInt = 600;
-
                 if (Options.IsEnableCache && expiresInt > minExpiresInt)
                 {
                     string key = BuildPresignedObjectCacheKey(bucketName, objectName, type);
