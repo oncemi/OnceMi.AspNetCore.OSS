@@ -2,7 +2,7 @@
 
 namespace OnceMi.AspNetCore.OSS
 {
-    static class TimeUtil
+    internal static class TimeUtil
     {
         /// <summary>
         /// 将时间转换成unix时间戳
@@ -11,7 +11,7 @@ namespace OnceMi.AspNetCore.OSS
         /// <returns>返回单位秒</returns>
         public static long DateTimeToUnixTimeStamp(DateTime time)
         {
-            DateTimeOffset dto = new DateTimeOffset(time);
+            var dto = new DateTimeOffset(time);
             return dto.ToUnixTimeSeconds();
         }
 
@@ -22,16 +22,12 @@ namespace OnceMi.AspNetCore.OSS
         /// <returns>返回单位秒</returns>
         public static long DateTimeToUnixTimeStamp(string timeStr)
         {
-            if (!string.IsNullOrEmpty(timeStr) && DateTime.TryParse(timeStr, out DateTime time))
+            if (!string.IsNullOrEmpty(timeStr) && DateTime.TryParse(timeStr, out var time))
             {
-                DateTimeOffset dto = new DateTimeOffset(time);
+                var dto = new DateTimeOffset(time);
                 return dto.ToUnixTimeSeconds();
             }
-            else
-            {
-                throw new ArgumentException("Input string is not time format.");
-            }
-
+            throw new ArgumentException("Input string is not time format.");
         }
 
         /// <summary>
@@ -43,7 +39,7 @@ namespace OnceMi.AspNetCore.OSS
         {
             if (timeStamp > 4102415999)
             {
-                string temp = timeStamp.ToString();
+                var temp = timeStamp.ToString();
                 if (temp.Length >= 10)
                 {
                     temp = temp.Substring(0, 10);
@@ -58,10 +54,7 @@ namespace OnceMi.AspNetCore.OSS
         /// 返回Unix时间戳
         /// </summary>
         /// <returns></returns>
-        public static long Timestamp()
-        {
-            return (DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000;
-        }
+        public static long Timestamp() => (DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000;
 
         /// <summary>
         /// 返回当前时间
@@ -74,13 +67,31 @@ namespace OnceMi.AspNetCore.OSS
             {
                 return DateTime.Now.ToString(format);
             }
-            else
-            {
-                return DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-            }
+            return DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
         }
 
+        #region 返回每月的第一天和最后一天
+
+        /// <summary>
+        /// 返回每月的第一天和最后一天
+        /// </summary>
+        /// <param name="month"></param>
+        /// <param name="firstDay"></param>
+        /// <param name="lastDay"></param>
+        public static void ReturnDateFormat(int month, out string firstDay, out string lastDay)
+        {
+            if (month > 12 || month < 1) month = 12;
+            var date = new DateTime(DateTime.Now.Year, month, 1);
+            var first = date.Date.AddDays(1 - date.Day);
+            var last = first.AddMonths(1).AddMilliseconds(-1);
+            firstDay = $"{first:yyyy-MM-dd}";
+            lastDay = $"{last:yyyy-MM-dd}";
+        }
+
+        #endregion
+
         #region 返回时间差
+
         public static string DateDiff(DateTime DateTime1, DateTime DateTime2)
         {
             string dateDiff = null;
@@ -89,25 +100,24 @@ namespace OnceMi.AspNetCore.OSS
                 //TimeSpan ts1 = new TimeSpan(DateTime1.Ticks);
                 //TimeSpan ts2 = new TimeSpan(DateTime2.Ticks);
                 //TimeSpan ts = ts1.Subtract(ts2).Duration();
-                TimeSpan ts = DateTime2 - DateTime1;
+                var ts = DateTime2 - DateTime1;
                 if (ts.Days >= 1)
                 {
-                    dateDiff = DateTime1.Month.ToString() + "月" + DateTime1.Day.ToString() + "日";
+                    dateDiff = DateTime1.Month + "月" + DateTime1.Day + "日";
                 }
                 else
                 {
                     if (ts.Hours > 1)
                     {
-                        dateDiff = ts.Hours.ToString() + "小时前";
+                        dateDiff = ts.Hours + "小时前";
                     }
                     else
                     {
-                        dateDiff = ts.Minutes.ToString() + "分钟前";
+                        dateDiff = ts.Minutes + "分钟前";
                     }
                 }
             }
-            catch
-            { }
+            catch { }
             return dateDiff;
         }
 
@@ -119,82 +129,12 @@ namespace OnceMi.AspNetCore.OSS
         /// <returns>日期间隔TimeSpan。</returns>
         public static TimeSpan DateDiff2(DateTime DateTime1, DateTime DateTime2)
         {
-            TimeSpan ts1 = new TimeSpan(DateTime1.Ticks);
-            TimeSpan ts2 = new TimeSpan(DateTime2.Ticks);
-            TimeSpan ts = ts1.Subtract(ts2).Duration();
+            var ts1 = new TimeSpan(DateTime1.Ticks);
+            var ts2 = new TimeSpan(DateTime2.Ticks);
+            var ts = ts1.Subtract(ts2).Duration();
             return ts;
         }
-        #endregion
 
-        #region 返回每月的第一天和最后一天
-        /// <summary>
-        /// 返回每月的第一天和最后一天
-        /// </summary>
-        /// <param name="month"></param>
-        /// <param name="firstDay"></param>
-        /// <param name="lastDay"></param>
-        public static void ReturnDateFormat(int month, out string firstDay, out string lastDay)
-        {
-            int year = DateTime.Now.Year + month / 12;
-            if (month != 12)
-            {
-                month = month % 12;
-            }
-            switch (month)
-            {
-                case 1:
-                    firstDay = DateTime.Now.ToString(year + "-0" + month + "-01");
-                    lastDay = DateTime.Now.ToString(year + "-0" + month + "-31");
-                    break;
-                case 2:
-                    firstDay = DateTime.Now.ToString(year + "-0" + month + "-01");
-                    if (DateTime.IsLeapYear(DateTime.Now.Year))
-                        lastDay = DateTime.Now.ToString(year + "-0" + month + "-29");
-                    else
-                        lastDay = DateTime.Now.ToString(year + "-0" + month + "-28");
-                    break;
-                case 3:
-                    firstDay = DateTime.Now.ToString(year + "-0" + month + "-01");
-                    lastDay = DateTime.Now.ToString("yyyy-0" + month + "-31");
-                    break;
-                case 4:
-                    firstDay = DateTime.Now.ToString(year + "-0" + month + "-01");
-                    lastDay = DateTime.Now.ToString(year + "-0" + month + "-30");
-                    break;
-                case 5:
-                    firstDay = DateTime.Now.ToString(year + "-0" + month + "-01");
-                    lastDay = DateTime.Now.ToString(year + "-0" + month + "-31");
-                    break;
-                case 6:
-                    firstDay = DateTime.Now.ToString(year + "-0" + month + "-01");
-                    lastDay = DateTime.Now.ToString(year + "-0" + month + "-30");
-                    break;
-                case 7:
-                    firstDay = DateTime.Now.ToString(year + "-0" + month + "-01");
-                    lastDay = DateTime.Now.ToString(year + "-0" + month + "-31");
-                    break;
-                case 8:
-                    firstDay = DateTime.Now.ToString(year + "-0" + month + "-01");
-                    lastDay = DateTime.Now.ToString(year + "-0" + month + "-31");
-                    break;
-                case 9:
-                    firstDay = DateTime.Now.ToString(year + "-0" + month + "-01");
-                    lastDay = DateTime.Now.ToString(year + "-0" + month + "-30");
-                    break;
-                case 10:
-                    firstDay = DateTime.Now.ToString(year + "-" + month + "-01");
-                    lastDay = DateTime.Now.ToString(year + "-" + month + "-31");
-                    break;
-                case 11:
-                    firstDay = DateTime.Now.ToString(year + "-" + month + "-01");
-                    lastDay = DateTime.Now.ToString(year + "-" + month + "-30");
-                    break;
-                default:
-                    firstDay = DateTime.Now.ToString(year + "-" + month + "-01");
-                    lastDay = DateTime.Now.ToString(year + "-" + month + "-31");
-                    break;
-            }
-        }
         #endregion
     }
 }
