@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.StaticFiles;
-using OnceMi.AspNetCore.OSS.Models.Qiniu;
+﻿using OnceMi.AspNetCore.OSS.Models.Qiniu;
+using OnceMi.AspNetCore.OSS.Providers;
 using Qiniu.Http;
 using Qiniu.Storage;
 using Qiniu.Util;

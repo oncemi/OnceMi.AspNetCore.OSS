@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.StaticFiles;
-using Minio;
+﻿using Minio;
 using Minio.DataModel;
 using Minio.Exceptions;
+using OnceMi.AspNetCore.OSS.Providers;
 using System;
 using System.Collections.Generic;
 using System.IO;

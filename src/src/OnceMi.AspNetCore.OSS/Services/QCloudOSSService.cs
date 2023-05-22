@@ -6,7 +6,7 @@ using COSXML.Model.Bucket;
 using COSXML.Model.Object;
 using COSXML.Model.Service;
 using COSXML.Model.Tag;
-using Microsoft.AspNetCore.StaticFiles;
+using OnceMi.AspNetCore.OSS.Providers;
 using System;
 using System.Collections.Generic;
 using System.IO;
