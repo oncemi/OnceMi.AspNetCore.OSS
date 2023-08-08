@@ -98,6 +98,19 @@ namespace Sample.AspNetCore.Mvc
                 option.IsEnableHttps = true;
                 option.IsEnableCache = true;
             });
+
+            //天翼云OOS
+            //添加名称为‘ctyunoos’的OSS对象储存配置信息
+            //Endpoint查询：https://www.ctyun.cn/document/10026693/10027878
+            services.AddOSSService("ctyunoos", option =>
+            {
+                option.Provider = OSSProvider.Ctyun;
+                option.Endpoint = "oos-sdqd.ctyunapi.cn"; //不需要带有协议
+                option.AccessKey = "6********************6";
+                option.SecretKey = "c********************5";
+                option.IsEnableHttps = true;
+                option.IsEnableCache = true;
+            });
             services.AddControllersWithViews();
         }
 
