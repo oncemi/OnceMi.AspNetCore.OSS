@@ -1,6 +1,6 @@
 
 # OnceMi.AspNetCore.OSS
-Asp.Net Core对象储存扩展包，支持Minio自建对象储存、阿里云OSS、腾讯云COS、七牛云Kodo、华为云OBS、百度云BOS。支持OSS常规操作，比如储存桶创建，删除、对象上传、下载、生成签名URL等。目前支持.NET Core3.1/.NET 5/.NET 6，推荐升级至.NET 6.
+Asp.Net Core对象储存扩展包，支持Minio自建对象储存、阿里云OSS、腾讯云COS、七牛云Kodo、华为云OBS、百度云BOS、天翼云OOS经典版。支持OSS常规操作，比如储存桶创建，删除、对象上传、下载、生成签名URL等。目前支持.NET Core3.1/.NET 5/.NET 6，推荐升级至.NET 6.
 
 ## 各厂家相关SDK文档  
 - Minio: [点此查看](https://docs.min.io/docs/dotnet-client-api-reference.html "点此查看")  
@@ -9,6 +9,7 @@ Asp.Net Core对象储存扩展包，支持Minio自建对象储存、阿里云OSS
 - 七牛云: [点此查看](https://developer.qiniu.com/kodo/1237/csharp "点此查看")  
 - HuaweiOBS：[点此查看](https://support.huaweicloud.com/sdk-dotnet-devg-obs/obs_25_0001.html "点此查看")  
 - 百度云BOS：[点此查看](https://cloud.baidu.com/doc/BOS/s/ejwvys1ju "点此查看")  
+- 天翼云OOS经典版：[点此查看](https://www.ctyun.cn/document/10026693 "点此查看")  
 
 ## 已知问题  
 1. Minio通过Nginx发反向代理后直接通过域名（不加端口）调用存在问题，应该是Minio本身问题，有兴趣的可以自行测试研究，具体信息我已经发布在Issue中。  
@@ -318,25 +319,25 @@ Task<ItemMeta> GetObjectMetadataAsync(string bucketName
 
 生成一个给HTTP PUT请求用的presigned URL。浏览器/移动端的客户端可以用这个URL进行上传，即使其所在的存储桶是私有的。这个presigned URL可以设置一个失效时间，且不能超过7天。  
 如果Option参数中设置为IsEnableCache为True，将会在有效时间中缓存生成的签名链接，同时也推荐开启此功能，将大大降低请求的频率。  
-注意：七牛云对象储存不支持此操作！  
+注意：七牛云、天翼云对象储存不支持此操作！  
 
 ##### SetObjectAclAsync  
 `Task<bool> SetObjectAclAsync(string bucketName, string objectName, AccessMode mode);`
 
 设置对象的访问权限，默认文件的访问权限是继承储存桶的。但是可以单独通过此API为对象设置访问权限。  
-注意：七牛云、百度云对象储存不支持此操作！  
+注意：七牛云、百度云、天翼云对象储存不支持此操作！  
 
 ##### GetObjectAclAsync  
 `Task<AccessMode> GetObjectAclAsync(string bucketName, string objectName);`
 
 获取对象的储存桶权限，如果是该权限继承自储存桶，获取的可能是储存桶对当前对象的访问权限。  
-注意：七牛云、百度云对象储存不支持此操作！  
+注意：七牛云、百度云、天翼云对象储存不支持此操作！  
 
 ##### RemoveObjectAclAsync  
 `Task<AccessMode> RemoveObjectAclAsync(string bucketName, string objectName);`
 
 清除该对象的访问权限或将其恢复至继承权限。  
-注意：七牛云对象储存不支持此操作！   
+注意：七牛云、天翼云对象储存不支持此操作！   
 
 ### 替换内部缓存提供器
 
