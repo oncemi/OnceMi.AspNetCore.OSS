@@ -7,7 +7,7 @@ namespace OnceMi.AspNetCore.OSS
     {
         Task<bool> RemoveIncompleteUploadAsync(string bucketName, string objectName);
 
-        Task<List<ItemUploadInfo>> ListIncompleteUploads(string bucketName);
+        Task<IEnumerable<ItemUploadInfo>> ListIncompleteUploads(string bucketName, string prefix = null, bool recursive = false);
 
         Task<PolicyInfo> GetPolicyAsync(string bucketName);
 
