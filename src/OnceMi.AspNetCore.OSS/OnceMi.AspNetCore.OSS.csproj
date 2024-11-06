@@ -12,6 +12,7 @@
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<RepositoryType>Github</RepositoryType>
 		<PackageReleaseNotes>1. 更新依赖nuget包；2. 添加天翼云支持（by cxwos）</PackageReleaseNotes>
+		<TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -36,10 +37,22 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="..\..\..\LICENSE">
+		<None Include="..\..\LICENSE">
 			<Pack>True</Pack>
 			<PackagePath></PackagePath>
 		</None>
 	</ItemGroup>
 
+	<ItemGroup>
+		<ProjectReference Include="..\huaweicloud_obs_3_22_3\huaweicloud_obs_3_22_3.csproj" >
+			<ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+			<IncludeAssets>huaweicloud_obs_3_22_3.dll</IncludeAssets>
+		</ProjectReference>
+	</ItemGroup>
+
+	<Target DependsOnTargets="ResolveReferences" Name="CopyProjectReferencesToPackage">
+		<ItemGroup>
+			<BuildOutputInPackage Include="@(ReferenceCopyLocalPaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))"/>
+		</ItemGroup>
+	</Target>
 </Project>
