@@ -639,48 +639,32 @@ namespace OnceMi.AspNetCore.OSS
             }
         }
 
-        public Task<List<Item>> ListObjectsAsync(string bucketName, string prefix = null)
+        public async Task<List<Item>> ListObjectsAsync(string bucketName, string prefix = null)
         {
             if (string.IsNullOrEmpty(bucketName))
             {
                 throw new ArgumentNullException(nameof(bucketName));
             }
-            IObservable<Minio.DataModel.Item> observable = _client.ListObjectsAsync(
+            IAsyncEnumerable<Minio.DataModel.Item> objEnums = _client.ListObjectsEnumAsync(
                 new ListObjectsArgs()
                     .WithBucket(bucketName)
                     .WithPrefix(prefix)
                     .WithRecursive(true));
             List<Item> result = new List<Item>();
-            bool isFinish = false;
-
-            IDisposable subscription = observable.Subscribe(
-                item =>
-                {
-                    result.Add(new Item()
-                    {
-                        Key = item.Key,
-                        LastModified = item.LastModified,
-                        ETag = item.ETag,
-                        Size = item.Size,
-                        BucketName = bucketName,
-                        IsDir = item.IsDir,
-                        LastModifiedDateTime = item.LastModifiedDateTime
-                    });
-                },
-                ex =>
-                {
-                    isFinish = true;
-                },
-                () =>
-                {
-                    isFinish = true;
-                });
-
-            while (!isFinish)
+            await foreach (var item in objEnums)
             {
-                Thread.Sleep(0);
+                result.Add(new Item()
+                {
+                    Key = item.Key,
+                    LastModified = item.LastModified,
+                    ETag = item.ETag,
+                    Size = item.Size,
+                    BucketName = bucketName,
+                    IsDir = item.IsDir,
+                    LastModifiedDateTime = item.LastModifiedDateTime
+                });
             }
-            return Task.FromResult(result);
+            return result;
         }
 
         public async Task GetObjectAsync(string bucketName, string objectName, Action<Stream> callback, CancellationToken cancellationToken = default)
@@ -882,7 +866,7 @@ namespace OnceMi.AspNetCore.OSS
             List<string> removeFailed = new List<string>();
             foreach (var item in rt)
             {
-                if(item.Code != "0")
+                if (item.Code != "0")
                 {
                     removeFailed.Add(item.Key);
                 }
